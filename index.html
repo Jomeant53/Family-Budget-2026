@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Belcaro Budget">
+<meta name="theme-color" content="#1C2B3A">
+<title>Belcaro Budget</title>
+<style>
+:root{--navy:#1C2B3A;--slate:#2E4057;--ice:#F0F4F8;--green:#155724;--gbkg:#D4EDDA;--amber:#856404;--abkg:#FFF3CD;--red:#721C24;--rbkg:#F8D7DA;--grey:#666666;--teal:#0D6B6E;--tbkg:#D1ECF1;--blue:#185FA5;--bbkg:#E8F0FB;--purp:#4A148C;--pbkg:#EDE7F6;--border:#E2E8F0;--text:#1A202C;--text2:#4A5568;--text3:#718096;--bg:#F7FAFC;--card:#FFFFFF;--r:12px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overscroll-behavior:none}
+.app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.nav{display:flex;background:var(--card);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nb{flex:1;padding:8px 2px 6px;border:none;background:none;cursor:pointer;font-size:10px;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:3px}
+.nb.active{color:var(--navy)}
+.nb svg{width:22px;height:22px;stroke-width:1.8;fill:none;stroke:currentColor}
+.screen{display:none;padding:16px 16px 80px;overflow-y:auto}
+.screen.active{display:block}
+.ph{background:var(--navy);color:white;padding:16px;margin:-16px -16px 16px;padding-top:calc(16px + env(safe-area-inset-top))}
+.pt{font-size:20px;font-weight:600}.ps{font-size:13px;opacity:.7;margin-top:2px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.ct{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.m{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:14px}
+.ml{font-size:12px;color:var(--text3);margin-bottom:4px}.mv{font-size:24px;font-weight:700}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.rl{font-size:14px;color:var(--text)}.rs{font-size:11px;color:var(--text3);margin-top:2px}
+.rv{font-size:15px;font-weight:600}
+.pbar{height:8px;background:var(--ice);border-radius:4px;overflow:hidden}
+.pf{height:8px;border-radius:4px}
+.pf.teal{background:var(--teal)}.pf.blue{background:var(--blue)}.pf.purp{background:var(--purp)}
+.gr{padding:10px 0;border-bottom:1px solid var(--border)}
+.gr:last-child{border-bottom:none}
+.gt{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.gn{font-size:14px;font-weight:500}.gp{font-size:12px;color:var(--text3)}
+.ga{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-top:4px}
+.wkr{display:grid;grid-template-columns:32px 1fr 70px;gap:8px;align-items:center;padding:8px 6px;border-radius:var(--rs);margin-bottom:4px}
+.wkr.amber{background:var(--abkg)}
+.wn{font-size:12px;font-weight:600;color:var(--text3);text-align:center}
+.wp{font-size:13px;font-weight:500}.we{font-size:11px;color:var(--text3)}
+.wa{font-size:14px;font-weight:700;text-align:right}
+.wa.r{color:var(--red)}.wa.g{color:var(--green)}.wa.a{color:var(--amber)}
+.bdg{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:4px}
+.bdg.a{background:var(--abkg);color:var(--amber)}
+.swm{margin-bottom:14px}
+.swh{font-size:13px;font-weight:600;color:var(--slate);padding:8px 10px;background:var(--ice);border-radius:var(--rs);margin-bottom:6px;display:flex;justify-content:space-between}
+.swr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.swr:last-child{border-bottom:none}
+.swl{font-size:13px;color:var(--text)}.swa{font-size:14px;font-weight:700}
+.swa.g{color:var(--green)}.swa.t{color:var(--teal)}.swa.p{color:var(--purp)}.swa.done{color:var(--teal);font-size:12px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.dot.g{background:var(--green)}.dot.a{background:var(--amber)}
+.bill-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.bill-row:last-child{border-bottom:none}
+.bill-l{display:flex;gap:10px}
+.bill-name{font-size:14px;color:var(--text)}.bill-freq{font-size:11px;color:var(--text3);margin-top:2px}
+.bill-amt{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap}
+.bill-edit-form{background:var(--ice);border-radius:var(--rs);padding:12px;margin:0 0 8px;display:none}
+.bill-edit-form.open{display:block}
+.ef-row{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.ef-lbl{font-size:12px;font-weight:600;color:var(--text2)}
+.ef-inp{border:1.5px solid var(--border);border-radius:var(--rs);padding:8px 10px;font-size:14px;background:white;color:var(--text);width:100%}
+.ef-inp:focus{outline:none;border-color:var(--navy)}
+.ef-btns{display:flex;gap:8px}
+.btn{padding:8px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none}
+.btn.save{background:var(--navy);color:white}
+.btn.reset{background:none;border:1px solid var(--border);color:var(--text3)}
+.btn.del{background:none;border:1px solid var(--rbkg);color:var(--red)}
+.add-bill-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 0;background:none;border:none;cursor:pointer;color:var(--blue);font-size:14px;font-weight:500;border-top:1px solid var(--border);margin-top:4px}
+.add-bill-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none}
+.edit-btn{font-size:11px;color:var(--blue);padding:2px 6px;border:1px solid var(--blue);border-radius:4px;background:none;cursor:pointer;margin-left:8px;white-space:nowrap}
+.ci{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.ci:last-child{border-bottom:none}
+.cc{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white}
+.cc.done{background:var(--green);border-color:var(--green)}
+.cc svg{width:14px;height:14px;stroke:white;stroke-width:2.5;fill:none;display:none}
+.cc.done svg{display:block}
+.ctt{font-size:14px;font-weight:500;color:var(--text)}.ctt.done{text-decoration:line-through;color:var(--text3)}
+.css2{font-size:12px;color:var(--text3);margin-top:2px}
+.inr{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.inr:last-child{border-bottom:none}
+.inl{font-size:14px;font-weight:500;color:var(--text)}.ins{font-size:11px;color:var(--text3);margin-top:2px}
+.inf{width:120px;text-align:right;font-size:15px;font-weight:600;border:1.5px solid var(--border);border-radius:var(--rs);padding:6px 10px;background:white;color:var(--text);-webkit-appearance:none}
+.inf:focus{outline:none;border-color:var(--navy)}
+.alert{border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.5}
+.alert.blue{background:var(--bbkg);color:var(--blue);border-left:3px solid var(--blue)}
+.alert.amber{background:var(--abkg);color:var(--amber);border-left:3px solid var(--amber)}
+.alert.red{background:var(--rbkg);color:var(--red);border-left:3px solid var(--red)}
+.alert.green{background:var(--gbkg);color:var(--green);border-left:3px solid var(--green)}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--text3);margin-bottom:12px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px}.ld{width:8px;height:8px;border-radius:50%}
+.sf{font-size:11px;color:var(--green);font-weight:600;opacity:0;margin-left:8px;transition:opacity .3s}
+.rule-card{background:var(--navy);color:white;border-radius:var(--r);padding:14px;margin-bottom:12px}
+.prog-summary{background:var(--gbkg);border-radius:var(--rs);padding:12px 14px;margin-top:12px;font-size:14px;font-weight:600;color:var(--green)}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="nav">
+  <button class="nb active" onclick="show('home',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+  <button class="nb" onclick="show('weekly',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Weekly</button>
+  <button class="nb" onclick="show('sweep',this)"><svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Sweep</button>
+  <button class="nb" onclick="show('bills',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Bills</button>
+  <button class="nb" onclick="show('setup',this)"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Setup</button>
+  <button class="nb" onclick="show('settings',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+</nav>
+
+<div class="screen active" id="screen-home">
+  <div class="ph"><div class="pt">Belcaro Budget</div><div class="ps" id="today-lbl"></div></div>
+  <div id="home-alert"></div>
+  <div class="alert blue">Bills account and Savings are completely separate. Joe's wage pays 100% of bills. Mel's wage goes 100% to savings.</div>
+  <div class="mg">
+    <div class="m"><div class="ml">Bills account</div><div class="mv" id="m-bills">—</div></div>
+    <div class="m"><div class="ml">Food account</div><div class="mv" id="m-food">—</div></div>
+    <div class="m"><div class="ml">Joe's weekly wage</div><div class="mv g">$1,820</div></div>
+    <div class="m"><div class="ml">Mel's monthly wage</div><div class="mv g">$2,256</div></div>
+    <div class="m" style="grid-column:span 2;background:var(--pbkg);border-color:var(--purp)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div class="ml" style="color:var(--purp);font-weight:600">Round-up savings</div>
+        <button onclick="editRoundup()" style="font-size:11px;color:var(--purp);padding:2px 8px;border:1px solid var(--purp);border-radius:4px;background:none;cursor:pointer">Update</button>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <div class="mv" id="m-roundup" style="color:var(--purp)">$0.00</div>
+        <div style="font-size:11px;color:var(--purp);opacity:.7">building up</div>
+      </div>
+      <div style="font-size:11px;color:var(--purp);margin-top:6px;opacity:.8">When this hits $500 — transfer to General Savings, update Sweep tab, then reset to $0</div>
+    </div>
+  </div>
+  <div class="card"><div class="ct">Savings progress</div><div id="home-goals"></div></div>
+  <div class="card"><div class="ct">Next 3 weeks — bills account</div><div id="home-next"></div></div>
+  <div class="rule-card"><div style="font-size:13px;font-weight:600;opacity:.7;margin-bottom:4px">The rule</div><div style="font-size:13px;line-height:1.5">Savings are not a backup wallet. Joe's wage covers every bill on its own. Mel's wage is 100% savings — never touch it for bills.</div></div>
+</div>
+
+<div class="screen" id="screen-weekly">
+  <div class="ph"><div class="pt">Weekly tracker</div><div class="ps">Bills account — check every Thursday</div></div>
+  <div class="alert green">No fortnightly cluster anymore — every bill is weekly or monthly. The account stays smooth all year, never below $129.</div>
+  <div class="legend">
+    <span class="leg"><span class="ld" style="background:var(--amber)"></span>Below $500 (still safe)</span>
+  </div>
+  <div class="card"><div id="wk-list"></div></div>
+</div>
+
+<div class="screen" id="screen-sweep">
+  <div class="ph"><div class="pt">Savings sweep</div><div class="ps">Do this when Mel's salary arrives</div></div>
+  <div class="alert blue"><strong>Sweep Mel's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Joe's wage already covers everything.</div>
+  <div class="card">
+    <div class="ct">Update saved totals <span class="sf" id="sweep-flash">✓ Saved</span></div>
+    <div id="sweep-inputs"></div>
+  </div>
+  <div class="card"><div class="ct">Monthly sweep — verified, zero shortfalls</div><div id="sweep-table"></div></div>
+</div>
+
+<div class="screen" id="screen-bills">
+  <div class="ph"><div class="pt">Bills</div><div class="ps">Tap Edit to change any bill</div></div>
+  <div class="legend">
+    <span class="leg"><span class="ld" style="background:var(--green)"></span>Auto direct debit</span>
+    <span class="leg"><span class="ld" style="background:var(--amber)"></span>Manual Thursday transfer</span>
+  </div>
+  <div class="card"><div class="ct">Every Thursday — manual</div><div id="b-thu"></div></div>
+  <div class="card"><div class="ct">Monthly auto</div><div id="b-mo"></div></div>
+  <div class="card"><div class="ct">Variable</div><div id="b-var"></div></div>
+</div>
+
+<div class="screen" id="screen-setup">
+  <div class="ph"><div class="pt">Setup checklist</div><div class="ps">Set up once — runs automatically forever</div></div>
+  <div class="alert amber">Set each as a weekly recurring payment in your bank app every Thursday. Tap to tick off.</div>
+  <div class="card"><div class="ct">Thursday recurring transfers (all from bills account)</div><div id="ci-list"></div></div>
+  <div class="card">
+    <div class="ct">When Mel's salary arrives (~3rd–6th)</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.8">1. Salary lands directly in savings — not bills<br>2. Go to Sweep tab immediately<br>3. Transfer the full $2,256.48 to the goals shown<br>4. Update saved totals in Sweep tab</div>
+  </div>
+  <div class="prog-summary" id="setup-prog">0 of 12 transfers set up</div>
+</div>
+
+<div class="screen" id="screen-settings">
+  <div class="ph"><div class="pt">Settings</div><div class="ps">Update when something changes in real life</div></div>
+  <div class="alert amber">Advanced — only change if something has genuinely changed.</div>
+  <div class="card">
+    <div class="ct">Account balances <span class="sf" id="bal-flash">✓ Saved</span></div>
+    <div class="inr"><div><div class="inl">Bills account</div><div class="ins">Current balance right now</div></div><input class="inf" type="number" id="inp-bills" step="0.01" inputmode="decimal" onchange="saveSettings('bal-flash')"></div>
+    <div class="inr"><div><div class="inl">Food account</div><div class="ins">Current balance right now</div></div><input class="inf" type="number" id="inp-food" step="0.01" inputmode="decimal" onchange="saveSettings('bal-flash')"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Savings goal targets <span class="sf" id="goal-flash">✓ Saved</span></div>
+    <div id="goal-inputs"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:3000,conf_saved:0,conf_target:4500,oct_saved:0,oct_target:1000,dec_saved:0,dec_target:3500,ef5k_saved:0,ef5k_target:5000,gs_saved:0,gs_target:10000};
+let S={...DEFAULTS};
+let checks=[false,false,false,false,false,false,false,false,false,false,false,false];
+
+const DEFAULT_BILLS={
+  thu:[
+    {id:'t1',n:'Food & Fuel account',f:'Every Thursday',a:500,auto:false},
+    {id:'t2',n:'Mel — personal',f:'Every Thursday',a:100,auto:false},
+    {id:'t3',n:'Mel — medical',f:'Every Thursday',a:100,auto:false},
+    {id:'t4',n:'Girls Syndy',f:'Every Thursday',a:12.50,auto:false},
+    {id:'t5',n:'Joe — personal',f:'Every Thursday',a:92.50,auto:false},
+    {id:'t6',n:'Gifts savings',f:'Every Thursday',a:64.92,auto:false},
+    {id:'t7',n:'Rent — Lina Crea',f:'Every Thursday',a:347.50,auto:false},
+    {id:'t8',n:'Medibank BPAY',f:'Every Thursday',a:134.62,auto:false},
+    {id:'t9',n:'Telstra BPAY',f:'Every Thursday',a:37.50,auto:false},
+    {id:'t10',n:'Optus BPAY',f:'Every Thursday',a:27.50,auto:false},
+    {id:'t11',n:'CT Fitness Gym',f:'Every Thursday — direct debit',a:59.00,auto:true},
+    {id:'t12',n:'WDNK Kindy',f:'Every Thursday (ends Dec 2026)',a:99.68,auto:false},
+    {id:'t13',n:'Grange Primary School',f:'Every Thursday (term-time)',a:12.25,auto:true},
+  ],
+  mo:[
+    {id:'m1',n:'AIA Insurance — Policy 1',f:'~8th monthly',a:177.21,auto:true},
+    {id:'m2',n:'AIA Insurance — Policy 2',f:'~8th monthly',a:134.17,auto:true},
+    {id:'m3',n:'AAMI car insurance',f:'~18th monthly',a:99.91,auto:true},
+    {id:'m4',n:'Swimming — Findon',f:'2nd monthly',a:203.83,auto:true},
+    {id:'m5',n:'Netflix',f:'24th monthly',a:36.98,auto:true},
+    {id:'m6',n:'Spotify',f:'17th monthly',a:22.24,auto:true},
+    {id:'m7',n:'Microsoft 365',f:'8th monthly',a:16,auto:true},
+    {id:'m8',n:'Audible',f:'23rd monthly',a:16.45,auto:true},
+    {id:'m9',n:'Revo',f:'~18th-20th monthly (was $55 to Apr)',a:69.99,auto:true},
+    {id:'m10',n:'Kindle',f:'~1st monthly',a:9.57,auto:true},
+    {id:'m11',n:'Apple subscriptions',f:'~14th monthly',a:34.44,auto:true},
+    {id:'m12',n:'Claude AI',f:'~28th monthly',a:24.42,auto:true},
+    {id:'m13',n:'Young Living',f:'~5th monthly',a:90.83,auto:true},
+    {id:'m14',n:'CIL Insurance',f:'~18th-27th monthly (varies)',a:70.75,auto:true},
+    {id:'m15',n:'Allianz Insure',f:'~1st-2nd monthly',a:67.33,auto:true},
+    {id:'m16',n:'MLC Life Insurance',f:'~14th-16th monthly, via Acenda',a:72.75,auto:true},
+  ],
+  var:[
+    {id:'v1',n:'Naturopath — Niki',f:'Per appointment (avg $332)',a:332.06,auto:false},
+    {id:'v2',n:'Alkaline Superfoods',f:'Every ~2 months',a:576.45,auto:false},
+  ]
+};
+let BILLS=JSON.parse(JSON.stringify(DEFAULT_BILLS));
+
+const SWEEPS=[
+  {m:'July 2026',d:'6 Jul',mel:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'},{l:'Conf running total',a:2256.48,cls:'done'}]},
+  {m:'August 2026',d:'4 Aug',mel:2256.48,rows:[{l:'→ Confirmation',a:2243.52,cls:'g'},{l:'Confirmation COMPLETE ✅',a:4500,cls:'done'},{l:'→ General Savings',a:12.96,cls:'p'}]},
+  {m:'September 2026',d:'4 Sep',mel:2256.48,rows:[{l:'→ Oct Holiday',a:1000,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
+  {m:'October 2026',d:'5 Oct',mel:2256.48,rows:[{l:'→ Emergency Fund',a:1743.52,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:3000,cls:'done'},{l:'→ Dec Holiday',a:512.96,cls:'t'}]},
+  {m:'November 2026',d:'4 Nov',mel:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
+  {m:'December 2026',d:'4 Dec',mel:2256.48,rows:[{l:'→ Dec Holiday',a:730.56,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1525.92,cls:'p'}]},
+  {m:'January 2027',d:'4 Jan',mel:2256.48,rows:[{l:'→ EF top-up to $5,000',a:2256.48,cls:'g'}]},
+  {m:'February 2027',d:'4 Feb',mel:2256.48,rows:[{l:'→ EF top-up',a:2256.48,cls:'g'}]},
+  {m:'March 2027',d:'4 Mar',mel:2256.48,rows:[{l:'→ EF top-up',a:487.04,cls:'g'},{l:'EF hits $5,000 ✅',a:5000,cls:'done'},{l:'→ General Savings',a:1769.44,cls:'p'}]},
+  {m:'April 2027',d:'5 Apr',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'May 2027',d:'4 May',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'June 2027',d:'4 Jun',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'July 2027',d:'5 Jul',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'August 2027',d:'4 Aug',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'September 2027',d:'6 Sep',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'October 2027',d:'4 Oct',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'November 2027',d:'4 Nov',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'December 2027',d:'6 Dec',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'January 2028',d:'4 Jan',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'February 2028',d:'4 Feb',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'March 2028',d:'6 Mar',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'April 2028',d:'4 Apr',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'May 2028',d:'4 May',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'June 2028',d:'5 Jun',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+];
+
+const WEEKS=[
+  {wk:1,p:'9–15 Jun',open:1209.83,close:1102.64,e:'Apple, MLC Life Ins'},
+  {wk:2,p:'16–22 Jun',open:1102.64,close:1071.78,e:'Spotify, Joe IN, AAMI, Revo, CIL Insurance'},
+  {wk:3,p:'23–29 Jun',open:1071.78,close:1225.96,e:'Audible, Netflix, Joe IN, Claude AI'},
+  {wk:4,p:'30 Jun–6 Jul',open:1225.96,close:1086.43,e:'Kindle, Allianz, Joe IN, Swimming, Young Living'},
+  {wk:5,p:'7–13 Jul',open:1086.43,close:991.08,e:'MS365, AIA, Joe IN'},
+  {wk:6,p:'14–20 Jul',open:991.08,close:923.78,e:'Apple, MLC Life Ins, Joe IN, Spotify, AAMI, Revo'},
+  {wk:7,p:'21–27 Jul',open:923.78,close:1031.63,e:'CIL Insurance, Joe IN, Audible, Netflix'},
+  {wk:8,p:'28 Jul–3 Aug',open:1031.63,close:958.51,e:'Claude AI, Joe IN, Kindle, Allianz, Swimming'},
+  {wk:9,p:'4–10 Aug',open:958.51,close:772.33,e:'Young Living, Joe IN, MS365, AIA'},
+  {wk:10,p:'11–17 Aug',open:772.33,close:874.93,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+  {wk:11,p:'18–24 Aug',open:874.93,close:600.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
+  {wk:12,p:'25–31 Aug',open:600.0,close:716.0,e:'Joe IN, Audible, Netflix'},
+  {wk:13,p:'1–7 Sep',open:716.0,close:480.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:14,p:'8–14 Sep',open:480.0,close:280.0,e:'Young Living, Joe IN, MS365, AIA'},
+  {wk:15,p:'15–21 Sep',open:280.0,close:400.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+  {wk:16,p:'22–28 Sep',open:400.0,close:300.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
+  {wk:17,p:'29 Sep–5 Oct',open:300.0,close:420.0,e:'Joe IN, Audible, Netflix'},
+  {wk:18,p:'6–12 Oct',open:420.0,close:340.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:19,p:'13–19 Oct',open:340.0,close:380.0,e:'Young Living, Joe IN, MS365, AIA'},
+  {wk:20,p:'20–26 Oct',open:380.0,close:400.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+  {wk:21,p:'27 Oct–2 Nov',open:400.0,close:348.11,e:'Joe IN, AAMI, Revo, CIL Insurance'},
+  {wk:22,p:'3–9 Nov',open:348.11,close:450.0,e:'Joe IN, Audible, Netflix'},
+  {wk:23,p:'10–16 Nov',open:450.0,close:400.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:24,p:'17–23 Nov',open:400.0,close:380.0,e:'Young Living, Joe IN, MS365, AIA'},
+  {wk:25,p:'24–30 Nov',open:380.0,close:420.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+  {wk:26,p:'1–7 Dec',open:420.0,close:350.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
+  {wk:27,p:'8–14 Dec',open:350.0,close:326.95,e:'Joe IN, Audible, Netflix'},
+  {wk:28,p:'15–21 Dec',open:326.95,close:294.09,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:29,p:'22–28 Dec',open:294.09,close:377.52,e:'Young Living, Joe IN, MS365, AIA'},
+  {wk:30,p:'29 Dec–4 Jan',open:377.52,close:328.82,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+];
+
+const GOALS=[
+  {k:'conf',n:'Confirmation (Aug)',s:'conf_saved',t:'conf_target',c:'blue',note:'August 2026 event — $4,500'},
+  {k:'oct',n:'Oct Holiday',s:'oct_saved',t:'oct_target',c:'teal',note:'Long weekend Oct'},
+  {k:'ef',n:'Emergency Fund',s:'ef_saved',t:'ef_target',c:'teal',note:'$3k now → $5k in 2027'},
+  {k:'dec',n:'Dec Holiday',s:'dec_saved',t:'dec_target',c:'teal',note:'Last week December'},
+  {k:'gs',n:'General Savings',s:'gs_saved',t:'gs_target',c:'purp',note:'$37k+ by Jun 2028'},
+];
+
+const SETUP=[
+  {t:'Food & Fuel $500/wk',s:"Bills → Food account"},
+  {t:'Mel personal $100/wk',s:"Bills → Mel's personal account"},
+  {t:'Mel medical $100/wk',s:"Bills → Mel's medical account"},
+  {t:'Girls Syndy $12.50/wk',s:"Bills → Girls Syndy account"},
+  {t:'Joe personal $92.50/wk',s:"Bills → Joe's personal account"},
+  {t:'Gifts savings $64.92/wk',s:"Bills → Gifts savings account"},
+  {t:'Rent $347.50/wk',s:"Bills → Lina Crea"},
+  {t:'Medibank $134.62/wk',s:"Bills → Medibank BPAY"},
+  {t:'Telstra $37.50/wk',s:"Bills → Telstra BPAY"},
+  {t:'Optus $27.50/wk',s:"Bills → Optus BPAY"},
+  {t:'CT Fitness $59/wk',s:"Bills → confirm direct debit amount"},
+  {t:'WDNK $99.68/wk',s:"Bills → WDNK Kindy (ends Dec 2026)"},
+];
+
+function fmt(n){return'$'+Math.abs(Math.round(n)).toLocaleString('en-AU');}
+function fmtd(n){return'$'+(Math.round(n*100)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+
+function show(s,b){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));$('screen-'+s).classList.add('active');b.classList.add('active');}
+
+function flash(id){const el=$(id);if(!el)return;el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000);}
+
+function load(){
+  try{const s=localStorage.getItem('belcaro-s');if(s)S={...DEFAULTS,...JSON.parse(s)};}catch(e){}
+  try{const c=localStorage.getItem('belcaro-c');if(c)checks=JSON.parse(c);}catch(e){}
+  try{const b=localStorage.getItem('belcaro-bills');if(b)BILLS=JSON.parse(b);}catch(e){}
+}
+function saveAll(){try{localStorage.setItem('belcaro-s',JSON.stringify(S));}catch(e){}}
+function saveChecks(){try{localStorage.setItem('belcaro-c',JSON.stringify(checks));}catch(e){}}
+function saveBills(){try{localStorage.setItem('belcaro-bills',JSON.stringify(BILLS));}catch(e){}}
+
+function saveSettings(fid){
+  const bv=parseFloat($('inp-bills').value),fv=parseFloat($('inp-food').value);
+  if(!isNaN(bv))S.bills=bv;if(!isNaN(fv))S.food=fv;
+  saveAll();flash(fid);renderHome();renderRoundup();
+}
+
+function editRoundup(){
+  const cur=S.roundup||0;
+  const val=prompt('Round-up account balance:',cur.toFixed(2));
+  if(val===null)return;
+  const n=parseFloat(val);
+  if(isNaN(n))return;
+  S.roundup=Math.max(0,Math.round(n*100)/100);
+  saveAll();
+  renderRoundup();
+}
+
+function renderRoundup(){
+  const el=$('m-roundup');
+  if(!el)return;
+  el.textContent=fmtd(S.roundup||0);
+}
+
+function getWeekIdx(){const now=new Date(),start=new Date(2026,5,9);return Math.min(Math.max(Math.floor((now-start)/(7*864e5)),0),29);}
+
+function renderHome(){
+  $('today-lbl').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const b=S.bills,f=S.food;
+  $('m-bills').textContent=fmtd(b);$('m-bills').className='mv '+(b<300?'r':b<700?'a':'g');
+  $('m-food').textContent=fmtd(f);$('m-food').className='mv '+(f<100?'r':f<300?'a':'g');
+  let al='';
+  if(b<200)al='<div class="alert red"><strong>Bills very low</strong> — still safe, Joe\'s next Thursday transfer is coming. Nothing bounces.</div>';
+  $('home-alert').innerHTML=al;
+  let gh='';
+  GOALS.forEach(g=>{
+    const sv=S[g.s]||0,tg=S[g.t]||1,pct=Math.min(100,Math.round(sv/tg*100));
+    gh+=`<div class="gr"><div class="gt"><span class="gn">${g.n}</span><span class="gp">${pct}%${pct>=100?' ✓':''}</span></div><div class="pbar"><div class="pf ${g.c}" style="width:${pct}%"></div></div><div class="ga"><span>${fmtd(sv)} saved</span><span>of ${fmt(tg)}</span></div></div>`;
+  });
+  $('home-goals').innerHTML=gh;
+  const wi=getWeekIdx();let nh='';
+  for(let i=wi;i<Math.min(wi+3,WEEKS.length);i++){
+    const w=WEEKS[i];
+    const cl=w.close<300?'r':w.close<700?'a':'';
+    nh+=`<div class="row"><div><div class="rl">Wk${w.wk}: ${w.p}</div><div class="rs">${w.e}</div></div><div class="rv ${cl}">${fmt(w.close)}</div></div>`;
+  }
+  $('home-next').innerHTML=nh;
+}
+
+function renderWeekly(){
+  let h='';
+  WEEKS.forEach(w=>{
+    const isLow=w.close<500;
+    const cl=isLow?'amber':'';
+    const ac=isLow?'a':'g';
+    const bdg=isLow?'<span class="bdg a">Watch</span>':'';
+    h+=`<div class="wkr ${cl}"><div class="wn">${w.wk}</div><div><div class="wp">${w.p}${bdg}</div><div class="we">${w.e}</div></div><div class="wa ${ac}">${fmt(w.close)}</div></div>`;
+  });
+  $('wk-list').innerHTML=h;
+}
+
+function renderSweep(){
+  let ih='';
+  GOALS.forEach(g=>{
+    ih+=`<div class="inr"><div><div class="inl">${g.n}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
+  });
+  $('sweep-inputs').innerHTML=ih;
+  let th='';
+  SWEEPS.forEach(sw=>{
+    th+=`<div class="swm"><div class="swh"><span>${sw.m} — Mel pay ${sw.d}</span><span style="font-weight:700;color:var(--green)">${fmtd(sw.mel)}</span></div>`;
+    sw.rows.forEach(r=>{th+=`<div class="swr"><span class="swl">${r.l}</span><span class="swa ${r.cls}">${fmtd(r.a)}</span></div>`;});
+    th+='</div>';
+  });
+  $('sweep-table').innerHTML=th;
+}
+
+function billRowsHtml(arr,sec){
+  let h='';
+  arr.forEach(b=>{
+    const editId=`edit-${b.id}`;
+    h+=`<div id="item-${b.id}">
+      <div class="bill-row">
+        <div class="bill-l">
+          <div class="dot ${b.auto?'g':'a'}"></div>
+          <div><div class="bill-name">${b.n}<button class="edit-btn" onclick="toggleEdit('${editId}')">Edit</button></div><div class="bill-freq">${b.f}</div></div>
+        </div>
+        <div class="bill-amt">${fmtd(b.a)}</div>
+      </div>
+      <div class="bill-edit-form" id="${editId}">
+        <div class="ef-row"><label class="ef-lbl">Name</label><input class="ef-inp" type="text" value="${b.n}" id="en-${b.id}"></div>
+        <div class="ef-row"><label class="ef-lbl">Amount ($)</label><input class="ef-inp" type="number" value="${b.a}" step="0.01" inputmode="decimal" id="ea-${b.id}"></div>
+        <div class="ef-row"><label class="ef-lbl">Frequency</label><input class="ef-inp" type="text" value="${b.f}" id="ef-${b.id}"></div>
+        <div class="ef-row"><label class="ef-lbl">Payment type</label>
+          <select class="ef-inp" id="et-${b.id}">
+            <option value="false" ${!b.auto?'selected':''}>Manual transfer</option>
+            <option value="true" ${b.auto?'selected':''}>Auto direct debit</option>
+          </select></div>
+        <div class="ef-btns">
+          <button class="btn save" onclick="saveBill('${b.id}','${sec}','${editId}')">Save</button>
+          <button class="btn reset" onclick="resetBill('${b.id}','${sec}')">Reset</button>
+          <button class="btn del" onclick="delBill('${b.id}','${sec}')">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  h+=`<button class="add-bill-btn" onclick="addBill('${sec}')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add bill</button>`;
+  return h;
+}
+
+function renderBills(){
+  $('b-thu').innerHTML=billRowsHtml(BILLS.thu,'thu');
+  $('b-mo').innerHTML=billRowsHtml(BILLS.mo,'mo');
+  $('b-var').innerHTML=billRowsHtml(BILLS.var,'var');
+}
+
+function toggleEdit(id){const el=$(id);if(!el)return;const o=el.classList.contains('open');document.querySelectorAll('.bill-edit-form.open').forEach(e=>e.classList.remove('open'));if(!o)el.classList.add('open');}
+
+function saveBill(id,sec,editId){
+  const arr=BILLS[sec],idx=arr.findIndex(b=>b.id===id);if(idx<0)return;
+  arr[idx].n=$(`en-${id}`).value.trim()||arr[idx].n;
+  arr[idx].a=parseFloat($(`ea-${id}`).value)||arr[idx].a;
+  arr[idx].f=$(`ef-${id}`).value.trim()||arr[idx].f;
+  arr[idx].auto=$(`et-${id}`).value==='true';
+  saveBills();renderBills();
+}
+
+function resetBill(id,sec){
+  if(!confirm('Reset to original values?'))return;
+  const def=DEFAULT_BILLS[sec].find(b=>b.id===id);
+  if(!def)return;
+  const idx=BILLS[sec].findIndex(b=>b.id===id);
+  if(idx>=0)BILLS[sec][idx]={...def};
+  saveBills();renderBills();
+}
+
+function delBill(id,sec){
+  if(!confirm('Delete this bill?'))return;
+  BILLS[sec]=BILLS[sec].filter(b=>b.id!==id);
+  saveBills();renderBills();
+}
+
+function addBill(sec){
+  const n=prompt('Bill name:');if(!n)return;
+  const a=parseFloat(prompt('Amount ($):'));if(isNaN(a))return;
+  const f=prompt('Frequency:')||'Monthly';
+  const auto=confirm('Auto direct debit? (OK=yes)');
+  BILLS[sec].push({id:uid(),n:n.trim(),f:f.trim(),a,auto});
+  saveBills();renderBills();
+}
+
+function renderSetup(){
+  let h='';
+  SETUP.forEach((it,i)=>{
+    const done=checks[i];
+    h+=`<div class="ci"><div class="cc ${done?'done':''}" onclick="toggleCheck(${i})"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="ctt ${done?'done':''}">${it.t}</div><div class="css2">${it.s}</div></div></div>`;
+  });
+  $('ci-list').innerHTML=h;
+  const done=checks.filter(Boolean).length;
+  $('setup-prog').textContent=`${done} of ${SETUP.length} transfers set up${done===SETUP.length?' — all done! 🎉':''}`;
+}
+
+function toggleCheck(i){checks[i]=!checks[i];saveChecks();renderSetup();}
+
+function renderGoalInputs(){
+  let h='';
+  GOALS.forEach(g=>{
+    h+=`<div class="inr"><div><div class="inl">${g.n}</div><div class="ins">${g.note}</div></div><input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome()"></div>`;
+  });
+  $('goal-inputs').innerHTML=h;
+}
+
+function syncInputs(){if($('inp-bills'))$('inp-bills').value=S.bills;if($('inp-food'))$('inp-food').value=S.food;}
+
+function init(){
+  load();syncInputs();
+  renderHome();renderRoundup();renderWeekly();renderSweep();renderBills();renderSetup();renderGoalInputs();
+}
+init();
+</script>
+</body>
+</html>
