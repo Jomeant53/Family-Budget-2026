@@ -452,11 +452,12 @@ function calculateLiveForecast(numWeeks){
     });
 
     const weekIn=PARTNER1_WAGE;
+    const open=bal;
     bal=Math.round((bal+weekIn-weekOut)*100)/100;
     weeks.push({
       start:weekStart,end:weekEnd,
       label:`${weekStart.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}–${weekEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}`,
-      moneyIn:weekIn,moneyOut:weekOut,close:bal,monthlyExtras,
+      open,moneyIn:weekIn,moneyOut:weekOut,close:bal,monthlyExtras,
     });
   }
   return weeks;
@@ -496,11 +497,11 @@ function renderWeekly(){
       <div>
         <div class="wp">${w.label}${bdg}</div>
         <div class="we" style="margin-top:3px;color:var(--text3)">${extrasStr}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Opens ${fmt(w.open)} → +${fmt(w.moneyIn)} → −${fmt(w.moneyOut)}</div>
       </div>
       <div style="text-align:right">
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em">closes</div>
         <div class="wa ${ac}">${fmt(w.close)}</div>
-        <div style="font-size:10px;color:var(--green);margin-top:2px">+${fmt(w.moneyIn)} in</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:1px">−${fmt(w.moneyOut)} out</div>
       </div>
     </div>`;
   });
