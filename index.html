@@ -150,13 +150,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="alert blue"><strong>Sweep Partner 2's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Partner 1's wage already covers everything.</div>
   <div id="bills-check"></div>
   <div class="card" style="border-color:var(--navy)">
-    <div class="ct">Calculate this month's allocation</div>
+    <div class="ct">Sweep this month's pay</div>
+    <div class="inr"><div><div class="inl">Date pay arrived</div><div class="ins">This locks in which month's sweep this is</div></div><input class="inf" type="date" id="calc-date" style="width:150px"></div>
     <div class="inr"><div><div class="inl">Amount to sweep</div><div class="ins">Usually $2,256.48</div></div><input class="inf" type="number" id="calc-amount" step="0.01" inputmode="decimal" value="2256.48"></div>
     <button class="btn save" style="width:100%;margin-top:8px;padding:11px" onclick="runAllocation()">Calculate priority order</button>
     <div id="calc-result" style="margin-top:12px"></div>
   </div>
   <div class="card">
-    <div class="ct">Update saved totals <span class="sf" id="sweep-flash">✓ Saved</span></div>
+    <div class="ct">Sweep history <span style="font-weight:400;color:var(--text3);text-transform:none">— tap to undo a mistake</span></div>
+    <div id="sweep-history"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Update saved totals manually <span class="sf" id="sweep-flash">✓ Saved</span></div>
     <div id="sweep-inputs"></div>
   </div>
 </div>
@@ -205,6 +210,7 @@ const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:5000,co
   date_conf:'2026-08-16',date_oct:'2026-09-25',date_ef:'',date_dec:'2026-12-20',date_gs:''};
 let S={...DEFAULTS};
 let checks=[false,false,false,false,false,false,false,false,false,false,false,false];
+let sweepHistory=[]; // [{monthLabel:'July 2026', dateApplied:'2026-07-06', alloc:{...}}]
 
 const DEFAULT_BILLS={
   thu:[
@@ -317,10 +323,12 @@ function load(){
   try{const s=localStorage.getItem('belcaro-s');if(s)S={...DEFAULTS,...JSON.parse(s)};}catch(e){}
   try{const c=localStorage.getItem('belcaro-c');if(c)checks=JSON.parse(c);}catch(e){}
   try{const b=localStorage.getItem('belcaro-bills');if(b)BILLS=JSON.parse(b);}catch(e){}
+  try{const h=localStorage.getItem('belcaro-sweephist');if(h)sweepHistory=JSON.parse(h);}catch(e){}
 }
 function saveAll(){try{localStorage.setItem('belcaro-s',JSON.stringify(S));}catch(e){}}
 function saveChecks(){try{localStorage.setItem('belcaro-c',JSON.stringify(checks));}catch(e){}}
 function saveBills(){try{localStorage.setItem('belcaro-bills',JSON.stringify(BILLS));}catch(e){}}
+function saveSweepHistory(){try{localStorage.setItem('belcaro-sweephist',JSON.stringify(sweepHistory));}catch(e){}}
 
 function saveSettings(fid){
   const bv=parseFloat($('inp-bills').value),fv=parseFloat($('inp-food').value);
@@ -466,6 +474,7 @@ function renderBillsCheck(){
 
 function renderSweep(){
   renderBillsCheck();
+  renderSweepHistory();
   let ih='';
   GOALS.forEach(g=>{
     ih+=`<div class="inr"><div><div class="inl">${S[g.nameKey]}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
@@ -473,10 +482,39 @@ function renderSweep(){
   $('sweep-inputs').innerHTML=ih;
 }
 
+function renderSweepHistory(){
+  const el=$('sweep-history');
+  if(!el)return;
+  if(sweepHistory.length===0){
+    el.innerHTML='<div class="ins">No sweeps recorded yet — once you calculate and apply a month above, it\'ll show up here.</div>';
+    return;
+  }
+  let h='';
+  [...sweepHistory].reverse().forEach(entry=>{
+    h+=`<div class="swr" style="cursor:pointer" onclick="undoSweep('${entry.monthLabel}')"><span class="swl">${entry.monthLabel} <span style="color:var(--text3);font-size:11px">(${entry.dateApplied})</span></span><span class="swa g">${fmtd(entry.total)}</span></div>`;
+  });
+  el.innerHTML=h;
+}
+
+function monthLabelFor(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  return d.toLocaleDateString('en-AU',{month:'long',year:'numeric'});
+}
+
 function runAllocation(){
+  const dateStr=$('calc-date').value;
   const amt=parseFloat($('calc-amount').value)||0;
+  if(!dateStr){$('calc-result').innerHTML='<div class="alert amber">Pick the date Partner 2\'s pay arrived first — this is what tells the app which month to plan for.</div>';return;}
   if(amt<=0){$('calc-result').innerHTML='<div class="alert amber">Enter an amount above $0 first.</div>';return;}
-  const {alloc,warnings}=calculateAllocation(amt);
+
+  const monthLabel=monthLabelFor(dateStr);
+  const already=sweepHistory.find(h=>h.monthLabel===monthLabel);
+  if(already){
+    $('calc-result').innerHTML=`<div class="alert red">⚠️ ${monthLabel} has already been swept on ${already.dateApplied} (${fmtd(already.total)} allocated). To redo it, undo it first in Sweep history below.</div>`;
+    return;
+  }
+
+  const {alloc,warnings}=calculateAllocation(amt,new Date(dateStr+'T00:00:00'));
   let h='';
   if(warnings.length){
     warnings.forEach(w=>{h+=`<div class="alert red">⚠️ ${w}</div>`;});
@@ -486,7 +524,7 @@ function runAllocation(){
   if(order.length===0){
     h+='<div class="alert green">All goals are already fully funded — nothing to allocate.</div>';
   } else {
-    h+='<div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Recommended order — most time-pressured first</div>';
+    h+=`<div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">${monthLabel} — most time-pressured first</div>`;
     order.forEach((k,i)=>{
       const g=GOALS.find(x=>x.k===k);
       const a=alloc[k];
@@ -497,19 +535,38 @@ function runAllocation(){
       h+=`<div class="swr"><span class="swl">${i+1}. ${S[g.nameKey]}</span><span class="swa g">${fmtd(a)}${willComplete?' ✅':''}</span></div>`;
     });
     h+=`<div class="prog-summary" style="margin-top:10px">Total allocated: ${fmtd(totalAllocated)} of ${fmtd(amt)}</div>`;
-    h+=`<button class="btn save" style="width:100%;margin-top:10px;padding:10px" onclick="applyAllocation(${JSON.stringify(alloc).replace(/"/g,'&quot;')})">Apply this to saved totals</button>`;
+    h+=`<button class="btn save" style="width:100%;margin-top:10px;padding:10px" onclick='applyAllocation(${JSON.stringify(alloc)},${JSON.stringify(monthLabel)},${JSON.stringify(dateStr)},${totalAllocated})'>Apply this to saved totals</button>`;
   }
   $('calc-result').innerHTML=h;
 }
 
-function applyAllocation(alloc){
+function applyAllocation(alloc,monthLabel,dateStr,total){
+  if(sweepHistory.find(h=>h.monthLabel===monthLabel)){
+    $('calc-result').innerHTML=`<div class="alert red">⚠️ ${monthLabel} was already applied — skipped to avoid double-counting.</div>`;
+    return;
+  }
   Object.keys(alloc).forEach(k=>{
     const g=GOALS.find(x=>x.k===k);
     if(g)S[g.s]=Math.round(((S[g.s]||0)+alloc[k])*100)/100;
   });
-  saveAll();
+  sweepHistory.push({monthLabel,dateApplied:dateStr,alloc,total});
+  saveAll();saveSweepHistory();
   renderHome();renderSweep();
-  $('calc-result').innerHTML='<div class="alert green">✅ Applied — saved totals updated.</div>';
+  $('calc-result').innerHTML=`<div class="alert green">✅ ${monthLabel} applied — saved totals updated.</div>`;
+}
+
+function undoSweep(monthLabel){
+  const idx=sweepHistory.findIndex(h=>h.monthLabel===monthLabel);
+  if(idx<0)return;
+  if(!confirm(`Undo the ${monthLabel} sweep? This will subtract what was allocated back out of each goal.`))return;
+  const entry=sweepHistory[idx];
+  Object.keys(entry.alloc).forEach(k=>{
+    const g=GOALS.find(x=>x.k===k);
+    if(g)S[g.s]=Math.round(((S[g.s]||0)-entry.alloc[k])*100)/100;
+  });
+  sweepHistory.splice(idx,1);
+  saveAll();saveSweepHistory();
+  renderHome();renderSweep();
 }
 
 function billRowsHtml(arr,sec){
