@@ -138,7 +138,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div class="screen" id="screen-weekly">
   <div class="ph"><div class="pt">Weekly tracker</div><div class="ps">Bills account — check every Thursday</div></div>
-  <div class="alert green">No fortnightly cluster anymore — every bill is weekly or monthly. The account stays smooth all year, never below $129.</div>
+  <div id="weekly-banner"></div>
+  <div class="alert blue">Each row is a real forecast — Partner 1's wage in, every bill due that week out, and the balance after — calculated live from your current bills balance and bill list in Settings/Bills.</div>
   <div class="legend">
     <span class="leg"><span class="ld" style="background:var(--amber)"></span>Below $500 (still safe)</span>
   </div>
@@ -261,39 +262,7 @@ const DEFAULT_BILLS={
 let BILLS=JSON.parse(JSON.stringify(DEFAULT_BILLS));
 
 
-// VERIFIED WEEKLY TRACKER — all bills weekly, no fortnightly cluster, zero negative days
-const WEEKS=[
-  {wk:1,p:'9–15 Jun',open:1209.83,close:1102.64,e:'Apple, MLC Life Ins'},
-  {wk:2,p:'16–22 Jun',open:1102.64,close:1071.78,e:'Spotify, P1 IN, AAMI, Revo, CIL Insurance'},
-  {wk:3,p:'23–29 Jun',open:1071.78,close:1225.96,e:'Audible, Netflix, P1 IN, Claude AI'},
-  {wk:4,p:'30 Jun–6 Jul',open:1225.96,close:1086.43,e:'Kindle, Allianz, P1 IN, Swimming, Young Living'},
-  {wk:5,p:'7–13 Jul',open:1086.43,close:991.08,e:'MS365, AIA, P1 IN'},
-  {wk:6,p:'14–20 Jul',open:991.08,close:923.78,e:'Apple, MLC Life Ins, P1 IN, Spotify, AAMI, Revo'},
-  {wk:7,p:'21–27 Jul',open:923.78,close:1031.63,e:'CIL Insurance, P1 IN, Audible, Netflix'},
-  {wk:8,p:'28 Jul–3 Aug',open:1031.63,close:958.51,e:'Claude AI, P1 IN, Kindle, Allianz, Swimming'},
-  {wk:9,p:'4–10 Aug',open:958.51,close:772.33,e:'Young Living, P1 IN, MS365, AIA'},
-  {wk:10,p:'11–17 Aug',open:772.33,close:874.93,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
-  {wk:11,p:'18–24 Aug',open:874.93,close:600.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
-  {wk:12,p:'25–31 Aug',open:600.0,close:716.0,e:'P1 IN, Audible, Netflix'},
-  {wk:13,p:'1–7 Sep',open:716.0,close:480.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:14,p:'8–14 Sep',open:480.0,close:280.0,e:'Young Living, P1 IN, MS365, AIA'},
-  {wk:15,p:'15–21 Sep',open:280.0,close:400.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
-  {wk:16,p:'22–28 Sep',open:400.0,close:300.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
-  {wk:17,p:'29 Sep–5 Oct',open:300.0,close:420.0,e:'P1 IN, Audible, Netflix'},
-  {wk:18,p:'6–12 Oct',open:420.0,close:340.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:19,p:'13–19 Oct',open:340.0,close:380.0,e:'Young Living, P1 IN, MS365, AIA'},
-  {wk:20,p:'20–26 Oct',open:380.0,close:400.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
-  {wk:21,p:'27 Oct–2 Nov',open:400.0,close:348.11,e:'P1 IN, AAMI, Revo, CIL Insurance'},
-  {wk:22,p:'3–9 Nov',open:348.11,close:450.0,e:'P1 IN, Audible, Netflix'},
-  {wk:23,p:'10–16 Nov',open:450.0,close:400.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:24,p:'17–23 Nov',open:400.0,close:380.0,e:'Young Living, P1 IN, MS365, AIA'},
-  {wk:25,p:'24–30 Nov',open:380.0,close:420.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
-  {wk:26,p:'1–7 Dec',open:420.0,close:350.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
-  {wk:27,p:'8–14 Dec',open:350.0,close:326.95,e:'P1 IN, Audible, Netflix'},
-  {wk:28,p:'15–21 Dec',open:326.95,close:294.09,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:29,p:'22–28 Dec',open:294.09,close:377.52,e:'Young Living, P1 IN, MS365, AIA'},
-  {wk:30,p:'29 Dec–4 Jan',open:377.52,close:328.82,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
-];
+
 
 const GOALS=[
   {k:'conf',nameKey:'name_conf',s:'conf_saved',t:'conf_target',dateKey:'date_conf',c:'blue',note:'August 2026 event — $4,500'},
@@ -404,7 +373,6 @@ function renderRoundup(){
   el.textContent=fmtd(S.roundup||0);
 }
 
-function getWeekIdx(){const now=new Date(),start=new Date(2026,5,9);return Math.min(Math.max(Math.floor((now-start)/(7*864e5)),0),29);}
 
 function renderHome(){
   $('today-lbl').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -420,23 +388,113 @@ function renderHome(){
     gh+=`<div class="gr"><div class="gt"><span class="gn">${S[g.nameKey]}</span><span class="gp">${pct}%${pct>=100?' ✓':''}</span></div><div class="pbar"><div class="pf ${g.c}" style="width:${pct}%"></div></div><div class="ga"><span>${fmtd(sv)} saved</span><span>of ${fmt(tg)}</span></div></div>`;
   });
   $('home-goals').innerHTML=gh;
-  const wi=getWeekIdx();let nh='';
-  for(let i=wi;i<Math.min(wi+3,WEEKS.length);i++){
-    const w=WEEKS[i];
+  const weeks=calculateLiveForecast(3);
+  let nh='';
+  weeks.forEach((w,i)=>{
     const cl=w.close<300?'r':w.close<700?'a':'';
-    nh+=`<div class="row"><div><div class="rl">Wk${w.wk}: ${w.p}</div><div class="rs">${w.e}</div></div><div class="rv ${cl}">${fmt(w.close)}</div></div>`;
-  }
+    const dueOut=w.due.filter(d=>d.type==='out').map(d=>d.n).join(', ');
+    nh+=`<div class="row"><div><div class="rl">Wk${i+1}: ${w.label}</div><div class="rs">${dueOut}</div></div><div class="rv ${cl}">${fmt(w.close)}</div></div>`;
+  });
   $('home-next').innerHTML=nh;
 }
 
+// ── LIVE WEEKLY FORECAST ──────────────────────────────────────────
+// Calculated fresh every time from S.bills (current real balance) and
+// the actual BILLS.thu / BILLS.mo lists — not a frozen snapshot.
+// Partner 1's wage is the first Thursday item by convention; everything
+// else in BILLS.thu fires the same day. Monthly bills extract their day
+// number from the frequency text (e.g. "~8th monthly" -> 8).
+const PARTNER1_WAGE=1820.00;
+
+function extractMonthDay(freqText){
+  const m=freqText.match(/(\d{1,2})(st|nd|rd|th)/);
+  return m?parseInt(m[1],10):1; // fallback to 1st if no day found
+}
+
+function nextThursdayOnOrAfter(d){
+  const day=d.getDay(); // 0=Sun..6=Sat, Thu=4
+  const diff=(4-day+7)%7;
+  const r=new Date(d);
+  r.setDate(r.getDate()+diff);
+  r.setHours(0,0,0,0);
+  return r;
+}
+
+function calculateLiveForecast(numWeeks){
+  numWeeks=numWeeks||12;
+  const today=new Date();today.setHours(0,0,0,0);
+  let bal=S.bills||0;
+  let firstThu=nextThursdayOnOrAfter(today);
+  const weeklyTotal=BILLS.thu.reduce((sum,b)=>sum+b.a,0); // includes Partner 1's wage being separate inflow
+  const weeks=[];
+
+  for(let i=0;i<numWeeks;i++){
+    const weekStart=new Date(firstThu);weekStart.setDate(weekStart.getDate()+i*7);
+    const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
+    const dueThisWeek=[]; // {name, amount, day}
+    let weekIn=0, weekOut=0;
+
+    // Partner 1's wage lands this Thursday
+    weekIn+=PARTNER1_WAGE;
+    dueThisWeek.push({n:'Partner 1 wage',a:PARTNER1_WAGE,type:'in'});
+
+    // All Thursday bills fire same day
+    BILLS.thu.forEach(b=>{
+      weekOut+=b.a;
+      dueThisWeek.push({n:b.n,a:b.a,type:'out'});
+    });
+
+    // Monthly bills whose day-of-month falls within this week's date range
+    BILLS.mo.forEach(b=>{
+      const targetDay=extractMonthDay(b.f);
+      // check each day in the week range for a matching day-of-month
+      for(let d=new Date(weekStart);d<=weekEnd;d.setDate(d.getDate()+1)){
+        if(d.getDate()===targetDay){
+          weekOut+=b.a;
+          dueThisWeek.push({n:b.n,a:b.a,type:'out'});
+          break;
+        }
+      }
+    });
+
+    bal=Math.round((bal+weekIn-weekOut)*100)/100;
+    weeks.push({
+      start:weekStart,end:weekEnd,
+      label:`${weekStart.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}–${weekEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}`,
+      moneyIn:weekIn,moneyOut:weekOut,close:bal,due:dueThisWeek,
+    });
+  }
+  return weeks;
+}
+
 function renderWeekly(){
+  const weeks=calculateLiveForecast(12);
+
+  // Find the genuine lowest point across the forecast for the banner
+  let lowest=weeks[0];
+  weeks.forEach(w=>{if(w.close<lowest.close)lowest=w;});
+  const bannerEl=$('weekly-banner');
+  if(bannerEl){
+    const cls=lowest.close<300?'red':(lowest.close<700?'amber':'green');
+    bannerEl.innerHTML=`<div class="alert ${cls}">Lowest point in the next 12 weeks: <strong>${fmtd(lowest.close)}</strong> in the week of ${lowest.label}. ${lowest.close<0?'⚠️ This goes negative — check your bill amounts and dates.':'Account stays positive throughout.'}</div>`;
+  }
+
   let h='';
-  WEEKS.forEach(w=>{
+  weeks.forEach((w,i)=>{
     const isLow=w.close<500;
     const cl=isLow?'amber':'';
-    const ac=isLow?'a':'g';
+    const ac=w.close<0?'r':(isLow?'a':'g');
     const bdg=isLow?'<span class="bdg a">Watch</span>':'';
-    h+=`<div class="wkr ${cl}"><div class="wn">${w.wk}</div><div><div class="wp">${w.p}${bdg}</div><div class="we">${w.e}</div></div><div class="wa ${ac}">${fmt(w.close)}</div></div>`;
+    const dueOut=w.due.filter(d=>d.type==='out').map(d=>d.n).join(', ');
+    h+=`<div class="wkr ${cl}" style="grid-template-columns:32px 1fr 70px;align-items:flex-start">
+      <div class="wn" style="margin-top:2px">${i+1}</div>
+      <div>
+        <div class="wp">${w.label}${bdg}</div>
+        <div class="we" style="margin-top:2px"><span style="color:var(--green)">+${fmtd(w.moneyIn)} in</span> · <span style="color:var(--text3)">${fmtd(w.moneyOut)} due</span></div>
+        <div class="we" style="margin-top:2px;color:var(--text3)">${dueOut}</div>
+      </div>
+      <div class="wa ${ac}">${fmt(w.close)}</div>
+    </div>`;
   });
   $('wk-list').innerHTML=h;
 }
