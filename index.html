@@ -200,6 +200,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ct">Savings goal targets <span class="sf" id="goal-flash">✓ Saved</span></div>
     <div id="goal-inputs"></div>
   </div>
+  <div class="card" style="border-color:var(--red)">
+    <div class="ct">Made a mistake?</div>
+    <button class="btn save" style="width:100%;padding:11px" onclick="undoLast()">Undo last change</button>
+    <div style="margin-top:12px"><div class="ct" style="margin-bottom:6px">Recent changes — tap any to revert back to that point</div><div id="undo-log"></div></div>
+  </div>
 </div>
 </div>
 
@@ -211,6 +216,8 @@ const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:5000,co
 let S={...DEFAULTS};
 let checks=[false,false,false,false,false,false,false,false,false,false,false,false];
 let sweepHistory=[]; // [{monthLabel:'July 2026', dateApplied:'2026-07-06', alloc:{...}}]
+let undoStack=[]; // [{label:'Bills account: $1,200 → $1,209.83', snapshot:{...S before change}}]
+const UNDO_LIMIT=20; // keep the last 20 changes, oldest drop off
 
 const DEFAULT_BILLS={
   thu:[
@@ -324,16 +331,60 @@ function load(){
   try{const c=localStorage.getItem('belcaro-c');if(c)checks=JSON.parse(c);}catch(e){}
   try{const b=localStorage.getItem('belcaro-bills');if(b)BILLS=JSON.parse(b);}catch(e){}
   try{const h=localStorage.getItem('belcaro-sweephist');if(h)sweepHistory=JSON.parse(h);}catch(e){}
+  try{const u=localStorage.getItem('belcaro-undo');if(u)undoStack=JSON.parse(u);}catch(e){}
 }
 function saveAll(){try{localStorage.setItem('belcaro-s',JSON.stringify(S));}catch(e){}}
 function saveChecks(){try{localStorage.setItem('belcaro-c',JSON.stringify(checks));}catch(e){}}
 function saveBills(){try{localStorage.setItem('belcaro-bills',JSON.stringify(BILLS));}catch(e){}}
 function saveSweepHistory(){try{localStorage.setItem('belcaro-sweephist',JSON.stringify(sweepHistory));}catch(e){}}
+function saveUndoStack(){try{localStorage.setItem('belcaro-undo',JSON.stringify(undoStack));}catch(e){}}
+
+// Call BEFORE making a change to S — snapshots current state so it can be restored
+function recordChange(label){
+  undoStack.push({label,snapshot:JSON.parse(JSON.stringify(S)),when:new Date().toLocaleString('en-AU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})});
+  if(undoStack.length>UNDO_LIMIT)undoStack.shift();
+  saveUndoStack();
+}
+
+function undoLast(){
+  if(undoStack.length===0)return;
+  const entry=undoStack.pop();
+  S=entry.snapshot;
+  saveAll();saveUndoStack();
+  renderHome();renderRoundup();renderSweep();renderGoalInputs();syncInputs();renderUndoLog();
+}
+
+function undoTo(index){
+  if(index<0||index>=undoStack.length)return;
+  if(!confirm(`Undo back to before "${undoStack[index].label}"? This also undoes everything after it.`))return;
+  const entry=undoStack[index];
+  S=entry.snapshot;
+  undoStack=undoStack.slice(0,index);
+  saveAll();saveUndoStack();
+  renderHome();renderRoundup();renderSweep();renderGoalInputs();syncInputs();renderUndoLog();
+}
+
+function renderUndoLog(){
+  const el=$('undo-log');
+  if(!el)return;
+  if(undoStack.length===0){
+    el.innerHTML='<div class="ins">No changes recorded yet.</div>';
+    return;
+  }
+  let h='';
+  [...undoStack].reverse().forEach((entry,i)=>{
+    const realIdx=undoStack.length-1-i;
+    h+=`<div class="swr" style="cursor:pointer" onclick="undoTo(${realIdx})"><span class="swl">${entry.label} <span style="color:var(--text3);font-size:11px">${entry.when}</span></span><span class="swa" style="color:var(--blue);font-size:12px">Revert to here</span></div>`;
+  });
+  $('undo-log').innerHTML=h;
+}
 
 function saveSettings(fid){
   const bv=parseFloat($('inp-bills').value),fv=parseFloat($('inp-food').value);
-  if(!isNaN(bv))S.bills=bv;if(!isNaN(fv))S.food=fv;
-  saveAll();flash(fid);renderHome();renderRoundup();renderBillsCheck();
+  const oldBills=S.bills,oldFood=S.food;
+  if(!isNaN(bv)&&bv!==oldBills){recordChange(`Bills account: ${fmtd(oldBills)} → ${fmtd(bv)}`);S.bills=bv;}
+  if(!isNaN(fv)&&fv!==oldFood){recordChange(`Food account: ${fmtd(oldFood)} → ${fmtd(fv)}`);S.food=fv;}
+  saveAll();flash(fid);renderHome();renderRoundup();renderBillsCheck();renderUndoLog();
 }
 
 function editRoundup(){
@@ -477,7 +528,7 @@ function renderSweep(){
   renderSweepHistory();
   let ih='';
   GOALS.forEach(g=>{
-    ih+=`<div class="inr"><div><div class="inl">${S[g.nameKey]}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
+    ih+=`<div class="inr"><div><div class="inl">${S[g.nameKey]}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="recordChange('${S[g.nameKey]}: '+fmtd(S['${g.s}']||0)+' → '+fmtd(parseFloat(this.value)||0));S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome();renderUndoLog()"></div>`;
   });
   $('sweep-inputs').innerHTML=ih;
 }
@@ -662,12 +713,12 @@ function renderGoalInputs(){
     const hasDeadline=g.k!=='gs'; // General Savings has no deadline by design
     h+=`<div class="inr" style="flex-direction:column;align-items:stretch;gap:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <input class="ef-inp" type="text" value="${S[g.nameKey]}" style="font-weight:500;font-size:14px;max-width:55%" onchange="S['${g.nameKey}']=this.value.trim()||S['${g.nameKey}'];saveAll();flash('goal-flash');renderHome();renderSweep()">
-        <input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome()">
+        <input class="ef-inp" type="text" value="${S[g.nameKey]}" style="font-weight:500;font-size:14px;max-width:55%" onchange="recordChange('Goal name: '+S['${g.nameKey}']+' → '+this.value.trim());S['${g.nameKey}']=this.value.trim()||S['${g.nameKey}'];saveAll();flash('goal-flash');renderHome();renderSweep();renderUndoLog()">
+        <input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="recordChange('${S[g.nameKey]} target: '+fmtd(S['${g.t}']||0)+' → '+fmtd(parseFloat(this.value)||0));S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome();renderUndoLog()">
       </div>
       ${hasDeadline?`<div style="display:flex;justify-content:space-between;align-items:center">
         <span class="ef-lbl" style="font-weight:400;color:var(--text3)">Needed by</span>
-        <input class="ef-inp" type="date" value="${S[g.dateKey]||''}" style="max-width:160px" onchange="S['${g.dateKey}']=this.value;saveAll();flash('goal-flash')">
+        <input class="ef-inp" type="date" value="${S[g.dateKey]||''}" style="max-width:160px" onchange="recordChange('${S[g.nameKey]} date: '+(S['${g.dateKey}']||'none')+' → '+(this.value||'none'));S['${g.dateKey}']=this.value;saveAll();flash('goal-flash');renderUndoLog()">
       </div>`:''}
       <div class="ins">${g.note}</div>
     </div>`;
@@ -679,7 +730,7 @@ function syncInputs(){if($('inp-bills'))$('inp-bills').value=S.bills;if($('inp-f
 
 function init(){
   load();syncInputs();
-  renderHome();renderRoundup();renderWeekly();renderSweep();renderBills();renderSetup();renderGoalInputs();
+  renderHome();renderRoundup();renderWeekly();renderSweep();renderBills();renderSetup();renderGoalInputs();renderUndoLog();
 }
 init();
 </script>
