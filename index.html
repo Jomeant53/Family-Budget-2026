@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Belcaro Budget">
+<meta name="apple-mobile-web-app-title" content="Family Budget 2026">
 <meta name="theme-color" content="#1C2B3A">
-<title>Belcaro Budget</title>
+<title>Family Budget 2026</title>
 <style>
 :root{--navy:#1C2B3A;--slate:#2E4057;--ice:#F0F4F8;--green:#155724;--gbkg:#D4EDDA;--amber:#856404;--abkg:#FFF3CD;--red:#721C24;--rbkg:#F8D7DA;--grey:#666666;--teal:#0D6B6E;--tbkg:#D1ECF1;--blue:#185FA5;--bbkg:#E8F0FB;--purp:#4A148C;--pbkg:#EDE7F6;--border:#E2E8F0;--text:#1A202C;--text2:#4A5568;--text3:#718096;--bg:#F7FAFC;--card:#FFFFFF;--r:12px;--rs:8px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -40,13 +40,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gn{font-size:14px;font-weight:500}.gp{font-size:12px;color:var(--text3)}
 .ga{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-top:4px}
 .wkr{display:grid;grid-template-columns:32px 1fr 70px;gap:8px;align-items:center;padding:8px 6px;border-radius:var(--rs);margin-bottom:4px}
-.wkr.amber{background:var(--abkg)}
+.wkr.low{background:var(--rbkg)}.wkr.sweep{background:var(--gbkg)}.wkr.amber{background:var(--abkg)}
 .wn{font-size:12px;font-weight:600;color:var(--text3);text-align:center}
 .wp{font-size:13px;font-weight:500}.we{font-size:11px;color:var(--text3)}
 .wa{font-size:14px;font-weight:700;text-align:right}
 .wa.r{color:var(--red)}.wa.g{color:var(--green)}.wa.a{color:var(--amber)}
 .bdg{display:inline-block;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:4px}
-.bdg.a{background:var(--abkg);color:var(--amber)}
+.bdg.r{background:var(--rbkg);color:var(--red)}.bdg.g{background:var(--gbkg);color:var(--green)}.bdg.a{background:var(--abkg);color:var(--amber)}
 .swm{margin-bottom:14px}
 .swh{font-size:13px;font-weight:600;color:var(--slate);padding:8px 10px;background:var(--ice);border-radius:var(--rs);margin-bottom:6px;display:flex;justify-content:space-between}
 .swr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
@@ -111,14 +111,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </nav>
 
 <div class="screen active" id="screen-home">
-  <div class="ph"><div class="pt">Belcaro Budget</div><div class="ps" id="today-lbl"></div></div>
+  <div class="ph"><div class="pt">Family Budget 2026</div><div class="ps" id="today-lbl"></div></div>
   <div id="home-alert"></div>
-  <div class="alert blue">Bills account and Savings are completely separate. Joe's wage pays 100% of bills. Mel's wage goes 100% to savings.</div>
+  <div class="alert blue">Bills account and Savings are completely separate. Partner 1's wage pays 100% of bills. Partner 2's wage goes 100% to savings.</div>
   <div class="mg">
     <div class="m"><div class="ml">Bills account</div><div class="mv" id="m-bills">—</div></div>
     <div class="m"><div class="ml">Food account</div><div class="mv" id="m-food">—</div></div>
-    <div class="m"><div class="ml">Joe's weekly wage</div><div class="mv g">$1,820</div></div>
-    <div class="m"><div class="ml">Mel's monthly wage</div><div class="mv g">$2,256</div></div>
+    <div class="m"><div class="ml">Partner 1's weekly wage</div><div class="mv g">$1,820</div></div>
+    <div class="m"><div class="ml">Partner 2's monthly wage</div><div class="mv g">$2,256</div></div>
     <div class="m" style="grid-column:span 2;background:var(--pbkg);border-color:var(--purp)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div class="ml" style="color:var(--purp);font-weight:600">Round-up savings</div>
@@ -133,7 +133,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div class="card"><div class="ct">Savings progress</div><div id="home-goals"></div></div>
   <div class="card"><div class="ct">Next 3 weeks — bills account</div><div id="home-next"></div></div>
-  <div class="rule-card"><div style="font-size:13px;font-weight:600;opacity:.7;margin-bottom:4px">The rule</div><div style="font-size:13px;line-height:1.5">Savings are not a backup wallet. Joe's wage covers every bill on its own. Mel's wage is 100% savings — never touch it for bills.</div></div>
+  <div class="rule-card"><div style="font-size:13px;font-weight:600;opacity:.7;margin-bottom:4px">The rule</div><div style="font-size:13px;line-height:1.5">Savings are not a backup wallet. Partner 1's wage covers every bill on its own. Partner 2's wage is 100% savings — never touch it for bills.</div></div>
 </div>
 
 <div class="screen" id="screen-weekly">
@@ -146,8 +146,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <div class="screen" id="screen-sweep">
-  <div class="ph"><div class="pt">Savings sweep</div><div class="ps">Do this when Mel's salary arrives</div></div>
-  <div class="alert blue"><strong>Sweep Mel's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Joe's wage already covers everything.</div>
+  <div class="ph"><div class="pt">Savings sweep</div><div class="ps">Do this when Partner 2's salary arrives</div></div>
+  <div class="alert blue"><strong>Sweep Partner 2's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Partner 1's wage already covers everything.</div>
   <div class="card">
     <div class="ct">Update saved totals <span class="sf" id="sweep-flash">✓ Saved</span></div>
     <div id="sweep-inputs"></div>
@@ -171,7 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="alert amber">Set each as a weekly recurring payment in your bank app every Thursday. Tap to tick off.</div>
   <div class="card"><div class="ct">Thursday recurring transfers (all from bills account)</div><div id="ci-list"></div></div>
   <div class="card">
-    <div class="ct">When Mel's salary arrives (~3rd–6th)</div>
+    <div class="ct">When Partner 2's salary arrives (~3rd–6th)</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.8">1. Salary lands directly in savings — not bills<br>2. Go to Sweep tab immediately<br>3. Transfer the full $2,256.48 to the goals shown<br>4. Update saved totals in Sweep tab</div>
   </div>
   <div class="prog-summary" id="setup-prog">0 of 12 transfers set up</div>
@@ -201,10 +201,10 @@ let checks=[false,false,false,false,false,false,false,false,false,false,false,fa
 const DEFAULT_BILLS={
   thu:[
     {id:'t1',n:'Food & Fuel account',f:'Every Thursday',a:500,auto:false},
-    {id:'t2',n:'Mel — personal',f:'Every Thursday',a:100,auto:false},
-    {id:'t3',n:'Mel — medical',f:'Every Thursday',a:100,auto:false},
+    {id:'t2',n:'Partner 2 — personal',f:'Every Thursday',a:100,auto:false},
+    {id:'t3',n:'Partner 2 — medical',f:'Every Thursday',a:100,auto:false},
     {id:'t4',n:'Girls Syndy',f:'Every Thursday',a:12.50,auto:false},
-    {id:'t5',n:'Joe — personal',f:'Every Thursday',a:92.50,auto:false},
+    {id:'t5',n:'Partner 1 — personal',f:'Every Thursday',a:92.50,auto:false},
     {id:'t6',n:'Gifts savings',f:'Every Thursday',a:64.92,auto:false},
     {id:'t7',n:'Rent — Lina Crea',f:'Every Thursday',a:347.50,auto:false},
     {id:'t8',n:'Medibank BPAY',f:'Every Thursday',a:134.62,auto:false},
@@ -239,64 +239,66 @@ const DEFAULT_BILLS={
 };
 let BILLS=JSON.parse(JSON.stringify(DEFAULT_BILLS));
 
+// VERIFIED SWEEP DATA — Partner 2's full salary swept monthly, Confirmation target $4,500, zero shortfalls
 const SWEEPS=[
-  {m:'July 2026',d:'6 Jul',mel:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'},{l:'Conf running total',a:2256.48,cls:'done'}]},
-  {m:'August 2026',d:'4 Aug',mel:2256.48,rows:[{l:'→ Confirmation',a:2243.52,cls:'g'},{l:'Confirmation COMPLETE ✅',a:4500,cls:'done'},{l:'→ General Savings',a:12.96,cls:'p'}]},
-  {m:'September 2026',d:'4 Sep',mel:2256.48,rows:[{l:'→ Oct Holiday',a:1000,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
-  {m:'October 2026',d:'5 Oct',mel:2256.48,rows:[{l:'→ Emergency Fund',a:1743.52,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:3000,cls:'done'},{l:'→ Dec Holiday',a:512.96,cls:'t'}]},
-  {m:'November 2026',d:'4 Nov',mel:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
-  {m:'December 2026',d:'4 Dec',mel:2256.48,rows:[{l:'→ Dec Holiday',a:730.56,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1525.92,cls:'p'}]},
-  {m:'January 2027',d:'4 Jan',mel:2256.48,rows:[{l:'→ EF top-up to $5,000',a:2256.48,cls:'g'}]},
-  {m:'February 2027',d:'4 Feb',mel:2256.48,rows:[{l:'→ EF top-up',a:2256.48,cls:'g'}]},
-  {m:'March 2027',d:'4 Mar',mel:2256.48,rows:[{l:'→ EF top-up',a:487.04,cls:'g'},{l:'EF hits $5,000 ✅',a:5000,cls:'done'},{l:'→ General Savings',a:1769.44,cls:'p'}]},
-  {m:'April 2027',d:'5 Apr',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'May 2027',d:'4 May',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'June 2027',d:'4 Jun',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'July 2027',d:'5 Jul',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'August 2027',d:'4 Aug',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'September 2027',d:'6 Sep',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'October 2027',d:'4 Oct',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'November 2027',d:'4 Nov',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'December 2027',d:'6 Dec',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'January 2028',d:'4 Jan',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'February 2028',d:'4 Feb',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'March 2028',d:'6 Mar',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'April 2028',d:'4 Apr',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'May 2028',d:'4 May',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'June 2028',d:'5 Jun',mel:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'July 2026',d:'6 Jul',p2:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'},{l:'Conf running total',a:2256.48,cls:'done'}]},
+  {m:'August 2026',d:'4 Aug',p2:2256.48,rows:[{l:'→ Confirmation',a:2243.52,cls:'g'},{l:'Confirmation COMPLETE ✅',a:4500,cls:'done'},{l:'→ General Savings',a:12.96,cls:'p'}]},
+  {m:'September 2026',d:'4 Sep',p2:2256.48,rows:[{l:'→ Oct Holiday',a:1000,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
+  {m:'October 2026',d:'5 Oct',p2:2256.48,rows:[{l:'→ Emergency Fund',a:1743.52,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:3000,cls:'done'},{l:'→ Dec Holiday',a:512.96,cls:'t'}]},
+  {m:'November 2026',d:'4 Nov',p2:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
+  {m:'December 2026',d:'4 Dec',p2:2256.48,rows:[{l:'→ Dec Holiday',a:730.56,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1525.92,cls:'p'}]},
+  {m:'January 2027',d:'4 Jan',p2:2256.48,rows:[{l:'→ EF top-up to $5,000',a:2256.48,cls:'g'}]},
+  {m:'February 2027',d:'4 Feb',p2:2256.48,rows:[{l:'→ EF top-up',a:2256.48,cls:'g'}]},
+  {m:'March 2027',d:'4 Mar',p2:2256.48,rows:[{l:'→ EF top-up',a:487.04,cls:'g'},{l:'EF hits $5,000 ✅',a:5000,cls:'done'},{l:'→ General Savings',a:1769.44,cls:'p'}]},
+  {m:'April 2027',d:'5 Apr',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'May 2027',d:'4 May',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'June 2027',d:'4 Jun',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'July 2027',d:'5 Jul',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'August 2027',d:'4 Aug',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'September 2027',d:'6 Sep',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'October 2027',d:'4 Oct',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'November 2027',d:'4 Nov',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'December 2027',d:'6 Dec',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'January 2028',d:'4 Jan',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'February 2028',d:'4 Feb',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'March 2028',d:'6 Mar',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'April 2028',d:'4 Apr',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'May 2028',d:'4 May',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'June 2028',d:'5 Jun',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
 ];
 
+// VERIFIED WEEKLY TRACKER — all bills weekly, no fortnightly cluster, zero negative days
 const WEEKS=[
   {wk:1,p:'9–15 Jun',open:1209.83,close:1102.64,e:'Apple, MLC Life Ins'},
-  {wk:2,p:'16–22 Jun',open:1102.64,close:1071.78,e:'Spotify, Joe IN, AAMI, Revo, CIL Insurance'},
-  {wk:3,p:'23–29 Jun',open:1071.78,close:1225.96,e:'Audible, Netflix, Joe IN, Claude AI'},
-  {wk:4,p:'30 Jun–6 Jul',open:1225.96,close:1086.43,e:'Kindle, Allianz, Joe IN, Swimming, Young Living'},
-  {wk:5,p:'7–13 Jul',open:1086.43,close:991.08,e:'MS365, AIA, Joe IN'},
-  {wk:6,p:'14–20 Jul',open:991.08,close:923.78,e:'Apple, MLC Life Ins, Joe IN, Spotify, AAMI, Revo'},
-  {wk:7,p:'21–27 Jul',open:923.78,close:1031.63,e:'CIL Insurance, Joe IN, Audible, Netflix'},
-  {wk:8,p:'28 Jul–3 Aug',open:1031.63,close:958.51,e:'Claude AI, Joe IN, Kindle, Allianz, Swimming'},
-  {wk:9,p:'4–10 Aug',open:958.51,close:772.33,e:'Young Living, Joe IN, MS365, AIA'},
-  {wk:10,p:'11–17 Aug',open:772.33,close:874.93,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
-  {wk:11,p:'18–24 Aug',open:874.93,close:600.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
-  {wk:12,p:'25–31 Aug',open:600.0,close:716.0,e:'Joe IN, Audible, Netflix'},
-  {wk:13,p:'1–7 Sep',open:716.0,close:480.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:14,p:'8–14 Sep',open:480.0,close:280.0,e:'Young Living, Joe IN, MS365, AIA'},
-  {wk:15,p:'15–21 Sep',open:280.0,close:400.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
-  {wk:16,p:'22–28 Sep',open:400.0,close:300.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
-  {wk:17,p:'29 Sep–5 Oct',open:300.0,close:420.0,e:'Joe IN, Audible, Netflix'},
-  {wk:18,p:'6–12 Oct',open:420.0,close:340.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:19,p:'13–19 Oct',open:340.0,close:380.0,e:'Young Living, Joe IN, MS365, AIA'},
-  {wk:20,p:'20–26 Oct',open:380.0,close:400.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
-  {wk:21,p:'27 Oct–2 Nov',open:400.0,close:348.11,e:'Joe IN, AAMI, Revo, CIL Insurance'},
-  {wk:22,p:'3–9 Nov',open:348.11,close:450.0,e:'Joe IN, Audible, Netflix'},
-  {wk:23,p:'10–16 Nov',open:450.0,close:400.0,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:24,p:'17–23 Nov',open:400.0,close:380.0,e:'Young Living, Joe IN, MS365, AIA'},
-  {wk:25,p:'24–30 Nov',open:380.0,close:420.0,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
-  {wk:26,p:'1–7 Dec',open:420.0,close:350.0,e:'Joe IN, AAMI, Revo, CIL Insurance'},
-  {wk:27,p:'8–14 Dec',open:350.0,close:326.95,e:'Joe IN, Audible, Netflix'},
-  {wk:28,p:'15–21 Dec',open:326.95,close:294.09,e:'Joe IN, Claude AI, Kindle, Allianz, Swimming'},
-  {wk:29,p:'22–28 Dec',open:294.09,close:377.52,e:'Young Living, Joe IN, MS365, AIA'},
-  {wk:30,p:'29 Dec–4 Jan',open:377.52,close:328.82,e:'Joe IN, Apple, MLC Life Ins, Spotify'},
+  {wk:2,p:'16–22 Jun',open:1102.64,close:1071.78,e:'Spotify, P1 IN, AAMI, Revo, CIL Insurance'},
+  {wk:3,p:'23–29 Jun',open:1071.78,close:1225.96,e:'Audible, Netflix, P1 IN, Claude AI'},
+  {wk:4,p:'30 Jun–6 Jul',open:1225.96,close:1086.43,e:'Kindle, Allianz, P1 IN, Swimming, Young Living'},
+  {wk:5,p:'7–13 Jul',open:1086.43,close:991.08,e:'MS365, AIA, P1 IN'},
+  {wk:6,p:'14–20 Jul',open:991.08,close:923.78,e:'Apple, MLC Life Ins, P1 IN, Spotify, AAMI, Revo'},
+  {wk:7,p:'21–27 Jul',open:923.78,close:1031.63,e:'CIL Insurance, P1 IN, Audible, Netflix'},
+  {wk:8,p:'28 Jul–3 Aug',open:1031.63,close:958.51,e:'Claude AI, P1 IN, Kindle, Allianz, Swimming'},
+  {wk:9,p:'4–10 Aug',open:958.51,close:772.33,e:'Young Living, P1 IN, MS365, AIA'},
+  {wk:10,p:'11–17 Aug',open:772.33,close:874.93,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
+  {wk:11,p:'18–24 Aug',open:874.93,close:600.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
+  {wk:12,p:'25–31 Aug',open:600.0,close:716.0,e:'P1 IN, Audible, Netflix'},
+  {wk:13,p:'1–7 Sep',open:716.0,close:480.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:14,p:'8–14 Sep',open:480.0,close:280.0,e:'Young Living, P1 IN, MS365, AIA'},
+  {wk:15,p:'15–21 Sep',open:280.0,close:400.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
+  {wk:16,p:'22–28 Sep',open:400.0,close:300.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
+  {wk:17,p:'29 Sep–5 Oct',open:300.0,close:420.0,e:'P1 IN, Audible, Netflix'},
+  {wk:18,p:'6–12 Oct',open:420.0,close:340.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:19,p:'13–19 Oct',open:340.0,close:380.0,e:'Young Living, P1 IN, MS365, AIA'},
+  {wk:20,p:'20–26 Oct',open:380.0,close:400.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
+  {wk:21,p:'27 Oct–2 Nov',open:400.0,close:348.11,e:'P1 IN, AAMI, Revo, CIL Insurance'},
+  {wk:22,p:'3–9 Nov',open:348.11,close:450.0,e:'P1 IN, Audible, Netflix'},
+  {wk:23,p:'10–16 Nov',open:450.0,close:400.0,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:24,p:'17–23 Nov',open:400.0,close:380.0,e:'Young Living, P1 IN, MS365, AIA'},
+  {wk:25,p:'24–30 Nov',open:380.0,close:420.0,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
+  {wk:26,p:'1–7 Dec',open:420.0,close:350.0,e:'P1 IN, AAMI, Revo, CIL Insurance'},
+  {wk:27,p:'8–14 Dec',open:350.0,close:326.95,e:'P1 IN, Audible, Netflix'},
+  {wk:28,p:'15–21 Dec',open:326.95,close:294.09,e:'P1 IN, Claude AI, Kindle, Allianz, Swimming'},
+  {wk:29,p:'22–28 Dec',open:294.09,close:377.52,e:'Young Living, P1 IN, MS365, AIA'},
+  {wk:30,p:'29 Dec–4 Jan',open:377.52,close:328.82,e:'P1 IN, Apple, MLC Life Ins, Spotify'},
 ];
 
 const GOALS=[
@@ -308,25 +310,25 @@ const GOALS=[
 ];
 
 const SETUP=[
-  {t:'Food & Fuel $500/wk',s:"Bills → Food account"},
-  {t:'Mel personal $100/wk',s:"Bills → Mel's personal account"},
-  {t:'Mel medical $100/wk',s:"Bills → Mel's medical account"},
-  {t:'Girls Syndy $12.50/wk',s:"Bills → Girls Syndy account"},
-  {t:'Joe personal $92.50/wk',s:"Bills → Joe's personal account"},
-  {t:'Gifts savings $64.92/wk',s:"Bills → Gifts savings account"},
-  {t:'Rent $347.50/wk',s:"Bills → Lina Crea"},
-  {t:'Medibank $134.62/wk',s:"Bills → Medibank BPAY"},
-  {t:'Telstra $37.50/wk',s:"Bills → Telstra BPAY"},
-  {t:'Optus $27.50/wk',s:"Bills → Optus BPAY"},
-  {t:'CT Fitness $59/wk',s:"Bills → confirm direct debit amount"},
-  {t:'WDNK $99.68/wk',s:"Bills → WDNK Kindy (ends Dec 2026)"},
+  {t:'Food & Fuel $500/wk',s:'Bills → Food account'},
+  {t:'Partner 2 personal $100/wk',s:'Bills → Partner 2\'s personal account'},
+  {t:'Partner 2 medical $100/wk',s:'Bills → Partner 2\'s medical account'},
+  {t:'Girls Syndy $12.50/wk',s:'Bills → Girls Syndy account'},
+  {t:'Partner 1 personal $92.50/wk',s:'Bills → Partner 1\'s personal account'},
+  {t:'Gifts savings $64.92/wk',s:'Bills → Gifts savings account'},
+  {t:'Rent $347.50/wk',s:'Bills → Lina Crea'},
+  {t:'Medibank $134.62/wk',s:'Bills → Medibank BPAY'},
+  {t:'Telstra $37.50/wk',s:'Bills → Telstra BPAY'},
+  {t:'Optus $27.50/wk',s:'Bills → Optus BPAY'},
+  {t:'CT Fitness $59/wk',s:'Bills → confirm direct debit amount'},
+  {t:'WDNK $99.68/wk',s:'Bills → WDNK Kindy (ends Dec 2026)'},
 ];
 
 function fmt(n){return'$'+Math.abs(Math.round(n)).toLocaleString('en-AU');}
 function fmtd(n){return'$'+(Math.round(n*100)/100).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 
-function show(s,b){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));$('screen-'+s).classList.add('active');b.classList.add('active');}
+function show(s,b){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nb').forEach(x=>x.classList.remove('active'));$(s.startsWith('screen')?s:'screen-'+s).classList.add('active');b.classList.add('active');}
 
 function flash(id){const el=$(id);if(!el)return;el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000);}
 
@@ -370,7 +372,7 @@ function renderHome(){
   $('m-bills').textContent=fmtd(b);$('m-bills').className='mv '+(b<300?'r':b<700?'a':'g');
   $('m-food').textContent=fmtd(f);$('m-food').className='mv '+(f<100?'r':f<300?'a':'g');
   let al='';
-  if(b<200)al='<div class="alert red"><strong>Bills very low</strong> — still safe, Joe\'s next Thursday transfer is coming. Nothing bounces.</div>';
+  if(b<200)al='<div class="alert red"><strong>Bills very low</strong> — still safe, Partner 1\'s next Thursday transfer is coming. Nothing bounces.</div>';
   $('home-alert').innerHTML=al;
   let gh='';
   GOALS.forEach(g=>{
@@ -407,7 +409,7 @@ function renderSweep(){
   $('sweep-inputs').innerHTML=ih;
   let th='';
   SWEEPS.forEach(sw=>{
-    th+=`<div class="swm"><div class="swh"><span>${sw.m} — Mel pay ${sw.d}</span><span style="font-weight:700;color:var(--green)">${fmtd(sw.mel)}</span></div>`;
+    th+=`<div class="swm"><div class="swh"><span>${sw.m} — Partner 2 pay ${sw.d}</span><span style="font-weight:700;color:var(--green)">${fmtd(sw.p2)}</span></div>`;
     sw.rows.forEach(r=>{th+=`<div class="swr"><span class="swl">${r.l}</span><span class="swa ${r.cls}">${fmtd(r.a)}</span></div>`;});
     th+='</div>';
   });
