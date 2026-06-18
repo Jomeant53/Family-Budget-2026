@@ -417,8 +417,11 @@ function extractMonthDay(freqText){
 }
 
 function nextThursdayOnOrAfter(d){
+  // Strictly AFTER today — if today IS Thursday, the user's saved balance already
+  // reflects today's wage and bills, so the forecast must start from next week,
+  // not re-apply today's transactions on top of an already-settled balance.
   const day=d.getDay(); // 0=Sun..6=Sat, Thu=4
-  const diff=(4-day+7)%7;
+  const diff=((4-day+7)%7)||7; // if diff would be 0 (today is Thursday), jump a full week instead
   const r=new Date(d);
   r.setDate(r.getDate()+diff);
   r.setHours(0,0,0,0);
