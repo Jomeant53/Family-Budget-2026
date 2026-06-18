@@ -139,11 +139,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="screen" id="screen-weekly">
   <div class="ph"><div class="pt">Weekly tracker</div><div class="ps">Bills account — check every Thursday</div></div>
   <div id="weekly-banner"></div>
-  <div class="alert blue">Each row is a real forecast — Partner 1's wage in, every bill due that week out, and the balance after — calculated live from your current bills balance and bill list in Settings/Bills.</div>
+  <div class="alert blue">Every week pays the same standard Thursday bills (see below). Each row only calls out what's <em>different</em> that week — usually a monthly bill landing on top.</div>
+  <div class="card" id="standard-bills-ref" style="cursor:pointer" onclick="this.querySelector('.std-detail').style.display=this.querySelector('.std-detail').style.display==='none'?'block':'none'">
+    <div class="ct" style="margin-bottom:4px">Standard weekly bills — every Thursday <span style="float:right;color:var(--blue);font-weight:400;text-transform:none">tap to view</span></div>
+    <div class="std-detail" style="display:none;font-size:12px;color:var(--text3);line-height:1.7;margin-top:8px"></div>
+  </div>
   <div class="legend">
     <span class="leg"><span class="ld" style="background:var(--amber)"></span>Below $500 (still safe)</span>
   </div>
   <div class="card"><div id="wk-list"></div></div>
+  <div class="card" id="weekly-summary"></div>
 </div>
 
 <div class="screen" id="screen-sweep">
@@ -392,8 +397,8 @@ function renderHome(){
   let nh='';
   weeks.forEach((w,i)=>{
     const cl=w.close<300?'r':w.close<700?'a':'';
-    const dueOut=w.due.filter(d=>d.type==='out').map(d=>d.n).join(', ');
-    nh+=`<div class="row"><div><div class="rl">Wk${i+1}: ${w.label}</div><div class="rs">${dueOut}</div></div><div class="rv ${cl}">${fmt(w.close)}</div></div>`;
+    const extrasStr=w.monthlyExtras.length?w.monthlyExtras.map(e=>e.n).join(', '):'Usual weekly bills only';
+    nh+=`<div class="row"><div><div class="rl">Wk${i+1}: ${w.label}</div><div class="rs">${extrasStr}</div></div><div class="rv ${cl}">${fmt(w.close)}</div></div>`;
   });
   $('home-next').innerHTML=nh;
 }
@@ -425,43 +430,33 @@ function calculateLiveForecast(numWeeks){
   const today=new Date();today.setHours(0,0,0,0);
   let bal=S.bills||0;
   let firstThu=nextThursdayOnOrAfter(today);
-  const weeklyTotal=BILLS.thu.reduce((sum,b)=>sum+b.a,0); // includes Partner 1's wage being separate inflow
+  const weeklyTotal=BILLS.thu.reduce((sum,b)=>sum+b.a,0);
   const weeks=[];
 
   for(let i=0;i<numWeeks;i++){
     const weekStart=new Date(firstThu);weekStart.setDate(weekStart.getDate()+i*7);
     const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
-    const dueThisWeek=[]; // {name, amount, day}
-    let weekIn=0, weekOut=0;
-
-    // Partner 1's wage lands this Thursday
-    weekIn+=PARTNER1_WAGE;
-    dueThisWeek.push({n:'Partner 1 wage',a:PARTNER1_WAGE,type:'in'});
-
-    // All Thursday bills fire same day
-    BILLS.thu.forEach(b=>{
-      weekOut+=b.a;
-      dueThisWeek.push({n:b.n,a:b.a,type:'out'});
-    });
+    const monthlyExtras=[]; // only the monthly bills landing THIS week — the part that actually varies
+    let weekOut=weeklyTotal; // every week pays the same recurring Thursday bills
 
     // Monthly bills whose day-of-month falls within this week's date range
     BILLS.mo.forEach(b=>{
       const targetDay=extractMonthDay(b.f);
-      // check each day in the week range for a matching day-of-month
       for(let d=new Date(weekStart);d<=weekEnd;d.setDate(d.getDate()+1)){
         if(d.getDate()===targetDay){
           weekOut+=b.a;
-          dueThisWeek.push({n:b.n,a:b.a,type:'out'});
+          monthlyExtras.push({n:b.n,a:b.a});
           break;
         }
       }
     });
 
+    const weekIn=PARTNER1_WAGE;
     bal=Math.round((bal+weekIn-weekOut)*100)/100;
     weeks.push({
       start:weekStart,end:weekEnd,
       label:`${weekStart.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}–${weekEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}`,
-      moneyIn:weekIn,moneyOut:weekOut,close:bal,due:dueThisWeek,
+      moneyIn:weekIn,moneyOut:weekOut,close:bal,monthlyExtras,
     });
   }
   return weeks;
@@ -469,6 +464,14 @@ function calculateLiveForecast(numWeeks){
 
 function renderWeekly(){
   const weeks=calculateLiveForecast(12);
+
+  // Populate the "standard weekly bills" reference from the real bill list
+  const stdEl=document.querySelector('#standard-bills-ref .std-detail');
+  if(stdEl){
+    const weeklyTotal=BILLS.thu.reduce((sum,b)=>sum+b.a,0);
+    const lines=BILLS.thu.map(b=>`${b.n} — ${fmtd(b.a)}`).join('<br>');
+    stdEl.innerHTML=`${lines}<br><strong style="color:var(--text)">Total: ${fmtd(weeklyTotal)}/wk</strong> (Partner 1's ${fmtd(PARTNER1_WAGE)}/wk wage covers this)`;
+  }
 
   // Find the genuine lowest point across the forecast for the banner
   let lowest=weeks[0];
@@ -485,18 +488,37 @@ function renderWeekly(){
     const cl=isLow?'amber':'';
     const ac=w.close<0?'r':(isLow?'a':'g');
     const bdg=isLow?'<span class="bdg a">Watch</span>':'';
-    const dueOut=w.due.filter(d=>d.type==='out').map(d=>d.n).join(', ');
-    h+=`<div class="wkr ${cl}" style="grid-template-columns:32px 1fr 70px;align-items:flex-start">
+    const extrasStr=w.monthlyExtras.length
+      ? w.monthlyExtras.map(e=>`${e.n} ${fmtd(e.a)}`).join(', ')
+      : 'Just the usual weekly bills';
+    h+=`<div class="wkr ${cl}" style="grid-template-columns:32px 1fr 76px;align-items:flex-start">
       <div class="wn" style="margin-top:2px">${i+1}</div>
       <div>
         <div class="wp">${w.label}${bdg}</div>
-        <div class="we" style="margin-top:2px"><span style="color:var(--green)">+${fmtd(w.moneyIn)} in</span> · <span style="color:var(--text3)">${fmtd(w.moneyOut)} due</span></div>
-        <div class="we" style="margin-top:2px;color:var(--text3)">${dueOut}</div>
+        <div class="we" style="margin-top:3px;color:var(--text3)">${extrasStr}</div>
       </div>
-      <div class="wa ${ac}">${fmt(w.close)}</div>
+      <div style="text-align:right">
+        <div class="wa ${ac}">${fmt(w.close)}</div>
+        <div style="font-size:10px;color:var(--green);margin-top:2px">+${fmt(w.moneyIn)} in</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px">−${fmt(w.moneyOut)} out</div>
+      </div>
     </div>`;
   });
   $('wk-list').innerHTML=h;
+
+  // Overall totals across the whole forecast period
+  const totalIn=weeks.reduce((s,w)=>s+w.moneyIn,0);
+  const totalOut=weeks.reduce((s,w)=>s+w.moneyOut,0);
+  const net=totalIn-totalOut;
+  const summaryEl=$('weekly-summary');
+  if(summaryEl){
+    const netCls=net>=0?'g':'r';
+    summaryEl.innerHTML=`<div class="ct">Totals — next ${weeks.length} weeks</div>
+      <div class="row"><div class="rl">Money in</div><div class="rv g">+${fmtd(totalIn)}</div></div>
+      <div class="row"><div class="rl">Money out</div><div class="rv" style="color:var(--text3)">−${fmtd(totalOut)}</div></div>
+      <div class="row"><div class="rl" style="font-weight:600">Net change</div><div class="rv ${netCls}" style="font-weight:700">${net>=0?'+'+fmtd(net):'−'+fmtd(Math.abs(net))}</div></div>
+      <div class="row"><div class="rl" style="font-weight:600">Balance now → in ${weeks.length} weeks</div><div class="rv">${fmtd(S.bills||0)} → ${fmtd(weeks[weeks.length-1].close)}</div></div>`;
+  }
 }
 
 // ── AUTOMATED PRIORITISATION ENGINE ──────────────────────────────
