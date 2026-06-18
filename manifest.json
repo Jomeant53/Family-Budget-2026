@@ -1,6 +1,6 @@
 {
-  "name": "Belcaro Budget",
-  "short_name": "Belcaro",
+"name": "Family Budget 2026",
+"short_name": "FB26",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1C2B3A",
