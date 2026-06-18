@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><link rel="manifest" href="manifest.json">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -194,7 +194,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 const $=id=>document.getElementById(id);
-const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:3000,conf_saved:0,conf_target:4500,oct_saved:0,oct_target:1000,dec_saved:0,dec_target:3500,ef5k_saved:0,ef5k_target:5000,gs_saved:0,gs_target:10000};
+const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:5000,conf_saved:0,conf_target:4500,oct_saved:0,oct_target:1000,dec_saved:0,dec_target:3500,gs_saved:0,gs_target:10000,
+  name_conf:'Confirmation (Aug)',name_oct:'Oct Holiday',name_ef:'Emergency Fund',name_dec:'Dec Holiday',name_gs:'General Savings'};
 let S={...DEFAULTS};
 let checks=[false,false,false,false,false,false,false,false,false,false,false,false];
 
@@ -241,15 +242,15 @@ let BILLS=JSON.parse(JSON.stringify(DEFAULT_BILLS));
 
 // VERIFIED SWEEP DATA — Partner 2's full salary swept monthly, Confirmation target $4,500, zero shortfalls
 const SWEEPS=[
-  {m:'July 2026',d:'6 Jul',p2:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'},{l:'Conf running total',a:2256.48,cls:'done'}]},
+  {m:'July 2026',d:'6 Jul',p2:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'}]},
   {m:'August 2026',d:'4 Aug',p2:2256.48,rows:[{l:'→ Confirmation',a:2243.52,cls:'g'},{l:'Confirmation COMPLETE ✅',a:4500,cls:'done'},{l:'→ General Savings',a:12.96,cls:'p'}]},
-  {m:'September 2026',d:'4 Sep',p2:2256.48,rows:[{l:'→ Oct Holiday',a:1000,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
-  {m:'October 2026',d:'5 Oct',p2:2256.48,rows:[{l:'→ Emergency Fund',a:1743.52,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:3000,cls:'done'},{l:'→ Dec Holiday',a:512.96,cls:'t'}]},
-  {m:'November 2026',d:'4 Nov',p2:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
-  {m:'December 2026',d:'4 Dec',p2:2256.48,rows:[{l:'→ Dec Holiday',a:730.56,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1525.92,cls:'p'}]},
-  {m:'January 2027',d:'4 Jan',p2:2256.48,rows:[{l:'→ EF top-up to $5,000',a:2256.48,cls:'g'}]},
-  {m:'February 2027',d:'4 Feb',p2:2256.48,rows:[{l:'→ EF top-up',a:2256.48,cls:'g'}]},
-  {m:'March 2027',d:'4 Mar',p2:2256.48,rows:[{l:'→ EF top-up',a:487.04,cls:'g'},{l:'EF hits $5,000 ✅',a:5000,cls:'done'},{l:'→ General Savings',a:1769.44,cls:'p'}]},
+  {m:'September 2026',d:'4 Sep',p2:2256.48,rows:[{l:'→ Oct Holiday',a:1000.0,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
+  {m:'October 2026',d:'5 Oct',p2:2256.48,rows:[{l:'→ Emergency Fund',a:2256.48,cls:'g'}]},
+  {m:'November 2026',d:'4 Nov',p2:2256.48,rows:[{l:'→ Emergency Fund',a:1487.04,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:5000,cls:'done'},{l:'→ Dec Holiday',a:769.44,cls:'t'}]},
+  {m:'December 2026',d:'4 Dec',p2:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
+  {m:'January 2027',d:'4 Jan',p2:2256.48,rows:[{l:'→ Dec Holiday',a:474.08,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1782.4,cls:'p'}]},
+  {m:'February 2027',d:'4 Feb',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
+  {m:'March 2027',d:'4 Mar',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
   {m:'April 2027',d:'5 Apr',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
   {m:'May 2027',d:'4 May',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
   {m:'June 2027',d:'4 Jun',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
@@ -302,11 +303,11 @@ const WEEKS=[
 ];
 
 const GOALS=[
-  {k:'conf',n:'Confirmation (Aug)',s:'conf_saved',t:'conf_target',c:'blue',note:'August 2026 event — $4,500'},
-  {k:'oct',n:'Oct Holiday',s:'oct_saved',t:'oct_target',c:'teal',note:'Long weekend Oct'},
-  {k:'ef',n:'Emergency Fund',s:'ef_saved',t:'ef_target',c:'teal',note:'$3k now → $5k in 2027'},
-  {k:'dec',n:'Dec Holiday',s:'dec_saved',t:'dec_target',c:'teal',note:'Last week December'},
-  {k:'gs',n:'General Savings',s:'gs_saved',t:'gs_target',c:'purp',note:'$37k+ by Jun 2028'},
+  {k:'conf',nameKey:'name_conf',s:'conf_saved',t:'conf_target',c:'blue',note:'August 2026 event — $4,500'},
+  {k:'oct',nameKey:'name_oct',s:'oct_saved',t:'oct_target',c:'teal',note:'Long weekend Oct'},
+  {k:'ef',nameKey:'name_ef',s:'ef_saved',t:'ef_target',c:'teal',note:'Target $5,000 by Nov 2026'},
+  {k:'dec',nameKey:'name_dec',s:'dec_saved',t:'dec_target',c:'teal',note:'Last week December'},
+  {k:'gs',nameKey:'name_gs',s:'gs_saved',t:'gs_target',c:'purp',note:'$40k+ by Jun 2028'},
 ];
 
 const SETUP=[
@@ -377,7 +378,7 @@ function renderHome(){
   let gh='';
   GOALS.forEach(g=>{
     const sv=S[g.s]||0,tg=S[g.t]||1,pct=Math.min(100,Math.round(sv/tg*100));
-    gh+=`<div class="gr"><div class="gt"><span class="gn">${g.n}</span><span class="gp">${pct}%${pct>=100?' ✓':''}</span></div><div class="pbar"><div class="pf ${g.c}" style="width:${pct}%"></div></div><div class="ga"><span>${fmtd(sv)} saved</span><span>of ${fmt(tg)}</span></div></div>`;
+    gh+=`<div class="gr"><div class="gt"><span class="gn">${S[g.nameKey]}</span><span class="gp">${pct}%${pct>=100?' ✓':''}</span></div><div class="pbar"><div class="pf ${g.c}" style="width:${pct}%"></div></div><div class="ga"><span>${fmtd(sv)} saved</span><span>of ${fmt(tg)}</span></div></div>`;
   });
   $('home-goals').innerHTML=gh;
   const wi=getWeekIdx();let nh='';
@@ -404,7 +405,7 @@ function renderWeekly(){
 function renderSweep(){
   let ih='';
   GOALS.forEach(g=>{
-    ih+=`<div class="inr"><div><div class="inl">${g.n}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
+    ih+=`<div class="inr"><div><div class="inl">${S[g.nameKey]}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
   });
   $('sweep-inputs').innerHTML=ih;
   let th='';
@@ -506,7 +507,13 @@ function toggleCheck(i){checks[i]=!checks[i];saveChecks();renderSetup();}
 function renderGoalInputs(){
   let h='';
   GOALS.forEach(g=>{
-    h+=`<div class="inr"><div><div class="inl">${g.n}</div><div class="ins">${g.note}</div></div><input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome()"></div>`;
+    h+=`<div class="inr" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <input class="ef-inp" type="text" value="${S[g.nameKey]}" style="font-weight:500;font-size:14px;max-width:60%" onchange="S['${g.nameKey}']=this.value.trim()||S['${g.nameKey}'];saveAll();flash('goal-flash');renderHome();renderSweep()">
+        <input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome()">
+      </div>
+      <div class="ins">${g.note}</div>
+    </div>`;
   });
   $('goal-inputs').innerHTML=h;
 }
