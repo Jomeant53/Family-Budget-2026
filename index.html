@@ -148,11 +148,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="screen" id="screen-sweep">
   <div class="ph"><div class="pt">Savings sweep</div><div class="ps">Do this when Partner 2's salary arrives</div></div>
   <div class="alert blue"><strong>Sweep Partner 2's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Partner 1's wage already covers everything.</div>
+  <div class="card" style="border-color:var(--navy)">
+    <div class="ct">Calculate this month's allocation</div>
+    <div class="inr"><div><div class="inl">Amount to sweep</div><div class="ins">Usually $2,256.48</div></div><input class="inf" type="number" id="calc-amount" step="0.01" inputmode="decimal" value="2256.48"></div>
+    <button class="btn save" style="width:100%;margin-top:8px;padding:11px" onclick="runAllocation()">Calculate priority order</button>
+    <div id="calc-result" style="margin-top:12px"></div>
+  </div>
   <div class="card">
     <div class="ct">Update saved totals <span class="sf" id="sweep-flash">✓ Saved</span></div>
     <div id="sweep-inputs"></div>
   </div>
-  <div class="card"><div class="ct">Monthly sweep — verified, zero shortfalls</div><div id="sweep-table"></div></div>
+  <div class="card"><div class="ct">Monthly sweep — historical reference</div><div id="sweep-table"></div></div>
 </div>
 
 <div class="screen" id="screen-bills">
@@ -195,7 +201,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const $=id=>document.getElementById(id);
 const DEFAULTS={bills:1209.83,food:125.17,roundup:0,ef_saved:0,ef_target:5000,conf_saved:0,conf_target:4500,oct_saved:0,oct_target:1000,dec_saved:0,dec_target:3500,gs_saved:0,gs_target:10000,
-  name_conf:'Confirmation (Aug)',name_oct:'Oct Holiday',name_ef:'Emergency Fund',name_dec:'Dec Holiday',name_gs:'General Savings'};
+  name_conf:'Confirmation (Aug)',name_oct:'Oct Holiday',name_ef:'Emergency Fund',name_dec:'Dec Holiday',name_gs:'General Savings',
+  date_conf:'2026-08-16',date_oct:'2026-09-25',date_ef:'',date_dec:'2026-12-20',date_gs:''};
 let S={...DEFAULTS};
 let checks=[false,false,false,false,false,false,false,false,false,false,false,false];
 
@@ -303,11 +310,11 @@ const WEEKS=[
 ];
 
 const GOALS=[
-  {k:'conf',nameKey:'name_conf',s:'conf_saved',t:'conf_target',c:'blue',note:'August 2026 event — $4,500'},
-  {k:'oct',nameKey:'name_oct',s:'oct_saved',t:'oct_target',c:'teal',note:'Long weekend Oct'},
-  {k:'ef',nameKey:'name_ef',s:'ef_saved',t:'ef_target',c:'teal',note:'Target $5,000 by Nov 2026'},
-  {k:'dec',nameKey:'name_dec',s:'dec_saved',t:'dec_target',c:'teal',note:'Last week December'},
-  {k:'gs',nameKey:'name_gs',s:'gs_saved',t:'gs_target',c:'purp',note:'$40k+ by Jun 2028'},
+  {k:'conf',nameKey:'name_conf',s:'conf_saved',t:'conf_target',dateKey:'date_conf',c:'blue',note:'August 2026 event — $4,500'},
+  {k:'oct',nameKey:'name_oct',s:'oct_saved',t:'oct_target',dateKey:'date_oct',c:'teal',note:'Long weekend Oct'},
+  {k:'ef',nameKey:'name_ef',s:'ef_saved',t:'ef_target',dateKey:'date_ef',c:'teal',note:'No deadline — ongoing safety net'},
+  {k:'dec',nameKey:'name_dec',s:'dec_saved',t:'dec_target',dateKey:'date_dec',c:'teal',note:'Last week December'},
+  {k:'gs',nameKey:'name_gs',s:'gs_saved',t:'gs_target',dateKey:'date_gs',c:'purp',note:'No deadline — catch-all'},
 ];
 
 const SETUP=[
@@ -402,6 +409,75 @@ function renderWeekly(){
   $('wk-list').innerHTML=h;
 }
 
+// ── AUTOMATED PRIORITISATION ENGINE ──────────────────────────────
+// Pure function: given current goal balances/targets/dates and an amount
+// of money to allocate, ranks goals by urgency and distributes the money.
+// Urgency = required monthly contribution to hit the goal by its deadline.
+// Goals with no deadline (or a past deadline) are funded last, in array order,
+// with the final goal (General Savings) acting as the catch-all for leftovers.
+function monthsUntil(dateStr, fromDate){
+  if(!dateStr)return Infinity;
+  const target=new Date(dateStr+'T00:00:00');
+  const from=fromDate||new Date();
+  const months=(target.getFullYear()-from.getFullYear())*12+(target.getMonth()-from.getMonth())
+    +(target.getDate()-from.getDate())/30;
+  return Math.max(months,1/30); // never zero/negative — treat as urgent instead of dividing by zero
+}
+
+function calculateAllocation(amount, fromDate){
+  fromDate=fromDate||new Date();
+  let rem=Math.round(amount*100)/100;
+  const alloc={};
+  const warnings=[];
+
+  // Build urgency list for goals WITH a deadline
+  const withDeadline=[];
+  const noDeadline=[];
+  GOALS.forEach(g=>{
+    const saved=S[g.s]||0, target=S[g.t]||0;
+    const remaining=Math.max(0,Math.round((target-saved)*100)/100);
+    if(remaining<=0)return; // already complete, skip
+    const dateStr=S[g.dateKey];
+    const months=monthsUntil(dateStr,fromDate);
+    if(dateStr && months<Infinity){
+      const monthlyNeeded=remaining/months;
+      withDeadline.push({g,remaining,months,monthlyNeeded,dateStr});
+    } else {
+      noDeadline.push({g,remaining});
+    }
+  });
+
+  // Most urgent (highest required monthly rate) goes first
+  withDeadline.sort((a,b)=>b.monthlyNeeded-a.monthlyNeeded);
+
+  // Flag anything that can't possibly be met even if it got 100% of this sweep
+  withDeadline.forEach(item=>{
+    if(item.monthlyNeeded>amount && item.months<2){
+      warnings.push(`${S[item.g.nameKey]} needs ${fmtd(item.monthlyNeeded)}/mo but only ${fmtd(amount)} is available — won't make its date without a manual top-up.`);
+    }
+  });
+
+  // Allocate to deadline goals in urgency order, then no-deadline goals in array order
+  [...withDeadline,...noDeadline].forEach(item=>{
+    if(rem<=0.005)return;
+    const give=Math.min(rem,item.remaining);
+    if(give>0.005){
+      alloc[item.g.k]=Math.round(give*100)/100;
+      rem=Math.round((rem-give)*100)/100;
+    }
+  });
+
+  // Anything left over with everything funded goes to the last goal (General Savings)
+  if(rem>0.005){
+    const gs=GOALS[GOALS.length-1];
+    alloc[gs.k]=Math.round(((alloc[gs.k]||0)+rem)*100)/100;
+    rem=0;
+  }
+
+  return {alloc,warnings};
+}
+
+
 function renderSweep(){
   let ih='';
   GOALS.forEach(g=>{
@@ -415,6 +491,45 @@ function renderSweep(){
     th+='</div>';
   });
   $('sweep-table').innerHTML=th;
+}
+
+function runAllocation(){
+  const amt=parseFloat($('calc-amount').value)||0;
+  if(amt<=0){$('calc-result').innerHTML='<div class="alert amber">Enter an amount above $0 first.</div>';return;}
+  const {alloc,warnings}=calculateAllocation(amt);
+  let h='';
+  if(warnings.length){
+    warnings.forEach(w=>{h+=`<div class="alert red">⚠️ ${w}</div>`;});
+  }
+  let totalAllocated=0;
+  const order=Object.keys(alloc);
+  if(order.length===0){
+    h+='<div class="alert green">All goals are already fully funded — nothing to allocate.</div>';
+  } else {
+    h+='<div style="font-size:12px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Recommended order — most time-pressured first</div>';
+    order.forEach((k,i)=>{
+      const g=GOALS.find(x=>x.k===k);
+      const a=alloc[k];
+      totalAllocated+=a;
+      const newTotal=Math.round(((S[g.s]||0)+a)*100)/100;
+      const tgt=S[g.t]||0;
+      const willComplete=newTotal>=tgt;
+      h+=`<div class="swr"><span class="swl">${i+1}. ${S[g.nameKey]}</span><span class="swa g">${fmtd(a)}${willComplete?' ✅':''}</span></div>`;
+    });
+    h+=`<div class="prog-summary" style="margin-top:10px">Total allocated: ${fmtd(totalAllocated)} of ${fmtd(amt)}</div>`;
+    h+=`<button class="btn save" style="width:100%;margin-top:10px;padding:10px" onclick="applyAllocation(${JSON.stringify(alloc).replace(/"/g,'&quot;')})">Apply this to saved totals</button>`;
+  }
+  $('calc-result').innerHTML=h;
+}
+
+function applyAllocation(alloc){
+  Object.keys(alloc).forEach(k=>{
+    const g=GOALS.find(x=>x.k===k);
+    if(g)S[g.s]=Math.round(((S[g.s]||0)+alloc[k])*100)/100;
+  });
+  saveAll();
+  renderHome();renderSweep();
+  $('calc-result').innerHTML='<div class="alert green">✅ Applied — saved totals updated.</div>';
 }
 
 function billRowsHtml(arr,sec){
@@ -507,11 +622,16 @@ function toggleCheck(i){checks[i]=!checks[i];saveChecks();renderSetup();}
 function renderGoalInputs(){
   let h='';
   GOALS.forEach(g=>{
+    const hasDeadline=g.k!=='gs'; // General Savings has no deadline by design
     h+=`<div class="inr" style="flex-direction:column;align-items:stretch;gap:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <input class="ef-inp" type="text" value="${S[g.nameKey]}" style="font-weight:500;font-size:14px;max-width:60%" onchange="S['${g.nameKey}']=this.value.trim()||S['${g.nameKey}'];saveAll();flash('goal-flash');renderHome();renderSweep()">
+        <input class="ef-inp" type="text" value="${S[g.nameKey]}" style="font-weight:500;font-size:14px;max-width:55%" onchange="S['${g.nameKey}']=this.value.trim()||S['${g.nameKey}'];saveAll();flash('goal-flash');renderHome();renderSweep()">
         <input class="inf" type="number" value="${S[g.t]||0}" step="100" inputmode="decimal" onchange="S['${g.t}']=parseFloat(this.value)||0;saveAll();flash('goal-flash');renderHome()">
       </div>
+      ${hasDeadline?`<div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="ef-lbl" style="font-weight:400;color:var(--text3)">Needed by</span>
+        <input class="ef-inp" type="date" value="${S[g.dateKey]||''}" style="max-width:160px" onchange="S['${g.dateKey}']=this.value;saveAll();flash('goal-flash')">
+      </div>`:''}
       <div class="ins">${g.note}</div>
     </div>`;
   });
