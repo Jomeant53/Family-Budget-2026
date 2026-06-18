@@ -148,6 +148,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="screen" id="screen-sweep">
   <div class="ph"><div class="pt">Savings sweep</div><div class="ps">Do this when Partner 2's salary arrives</div></div>
   <div class="alert blue"><strong>Sweep Partner 2's FULL $2,256.48</strong> the day it lands (~3rd–6th). None of it goes to bills — Partner 1's wage already covers everything.</div>
+  <div id="bills-check"></div>
   <div class="card" style="border-color:var(--navy)">
     <div class="ct">Calculate this month's allocation</div>
     <div class="inr"><div><div class="inl">Amount to sweep</div><div class="ins">Usually $2,256.48</div></div><input class="inf" type="number" id="calc-amount" step="0.01" inputmode="decimal" value="2256.48"></div>
@@ -158,7 +159,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="ct">Update saved totals <span class="sf" id="sweep-flash">✓ Saved</span></div>
     <div id="sweep-inputs"></div>
   </div>
-  <div class="card"><div class="ct">Monthly sweep — historical reference</div><div id="sweep-table"></div></div>
 </div>
 
 <div class="screen" id="screen-bills">
@@ -247,33 +247,6 @@ const DEFAULT_BILLS={
 };
 let BILLS=JSON.parse(JSON.stringify(DEFAULT_BILLS));
 
-// VERIFIED SWEEP DATA — Partner 2's full salary swept monthly, Confirmation target $4,500, zero shortfalls
-const SWEEPS=[
-  {m:'July 2026',d:'6 Jul',p2:2256.48,rows:[{l:'→ Confirmation',a:2256.48,cls:'g'}]},
-  {m:'August 2026',d:'4 Aug',p2:2256.48,rows:[{l:'→ Confirmation',a:2243.52,cls:'g'},{l:'Confirmation COMPLETE ✅',a:4500,cls:'done'},{l:'→ General Savings',a:12.96,cls:'p'}]},
-  {m:'September 2026',d:'4 Sep',p2:2256.48,rows:[{l:'→ Oct Holiday',a:1000.0,cls:'t'},{l:'Oct Holiday COMPLETE ✅',a:1000,cls:'done'},{l:'→ Emergency Fund',a:1256.48,cls:'g'}]},
-  {m:'October 2026',d:'5 Oct',p2:2256.48,rows:[{l:'→ Emergency Fund',a:2256.48,cls:'g'}]},
-  {m:'November 2026',d:'4 Nov',p2:2256.48,rows:[{l:'→ Emergency Fund',a:1487.04,cls:'g'},{l:'Emergency Fund COMPLETE ✅',a:5000,cls:'done'},{l:'→ Dec Holiday',a:769.44,cls:'t'}]},
-  {m:'December 2026',d:'4 Dec',p2:2256.48,rows:[{l:'→ Dec Holiday',a:2256.48,cls:'t'}]},
-  {m:'January 2027',d:'4 Jan',p2:2256.48,rows:[{l:'→ Dec Holiday',a:474.08,cls:'t'},{l:'Dec Holiday COMPLETE ✅',a:3500,cls:'done'},{l:'→ General Savings',a:1782.4,cls:'p'}]},
-  {m:'February 2027',d:'4 Feb',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'March 2027',d:'4 Mar',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'April 2027',d:'5 Apr',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'May 2027',d:'4 May',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'June 2027',d:'4 Jun',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'July 2027',d:'5 Jul',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'August 2027',d:'4 Aug',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'September 2027',d:'6 Sep',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'October 2027',d:'4 Oct',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'November 2027',d:'4 Nov',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'December 2027',d:'6 Dec',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'January 2028',d:'4 Jan',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'February 2028',d:'4 Feb',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'March 2028',d:'6 Mar',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'April 2028',d:'4 Apr',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'May 2028',d:'4 May',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-  {m:'June 2028',d:'5 Jun',p2:2256.48,rows:[{l:'→ General Savings',a:2256.48,cls:'p'}]},
-];
 
 // VERIFIED WEEKLY TRACKER — all bills weekly, no fortnightly cluster, zero negative days
 const WEEKS=[
@@ -352,7 +325,7 @@ function saveBills(){try{localStorage.setItem('belcaro-bills',JSON.stringify(BIL
 function saveSettings(fid){
   const bv=parseFloat($('inp-bills').value),fv=parseFloat($('inp-food').value);
   if(!isNaN(bv))S.bills=bv;if(!isNaN(fv))S.food=fv;
-  saveAll();flash(fid);renderHome();renderRoundup();
+  saveAll();flash(fid);renderHome();renderRoundup();renderBillsCheck();
 }
 
 function editRoundup(){
@@ -478,19 +451,26 @@ function calculateAllocation(amount, fromDate){
 }
 
 
+const BILLS_BUFFER=400; // fixed safety minimum for the bills account — comfortably above the verified worst week ($280)
+
+function renderBillsCheck(){
+  const b=S.bills||0;
+  const el=$('bills-check');
+  if(!el)return;
+  if(b>=BILLS_BUFFER){
+    el.innerHTML=`<div class="alert green">✅ Bills account at ${fmtd(b)} — above the ${fmtd(BILLS_BUFFER)} safety buffer. Safe to sweep savings as normal.</div>`;
+  } else {
+    el.innerHTML=`<div class="alert red">⚠️ Bills account at ${fmtd(b)} — below the ${fmtd(BILLS_BUFFER)} safety buffer. Double-check Partner 1's transfer landed before sweeping savings.</div>`;
+  }
+}
+
 function renderSweep(){
+  renderBillsCheck();
   let ih='';
   GOALS.forEach(g=>{
     ih+=`<div class="inr"><div><div class="inl">${S[g.nameKey]}</div><div class="ins">Saved so far</div></div><input class="inf" type="number" value="${S[g.s]||0}" step="0.01" inputmode="decimal" onchange="S['${g.s}']=parseFloat(this.value)||0;saveAll();flash('sweep-flash');renderHome()"></div>`;
   });
   $('sweep-inputs').innerHTML=ih;
-  let th='';
-  SWEEPS.forEach(sw=>{
-    th+=`<div class="swm"><div class="swh"><span>${sw.m} — Partner 2 pay ${sw.d}</span><span style="font-weight:700;color:var(--green)">${fmtd(sw.p2)}</span></div>`;
-    sw.rows.forEach(r=>{th+=`<div class="swr"><span class="swl">${r.l}</span><span class="swa ${r.cls}">${fmtd(r.a)}</span></div>`;});
-    th+='</div>';
-  });
-  $('sweep-table').innerHTML=th;
 }
 
 function runAllocation(){
